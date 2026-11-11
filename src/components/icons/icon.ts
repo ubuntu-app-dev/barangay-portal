@@ -1,0 +1,12 @@
+export { default as CheckIcon } from "./CheckIcon";
+export { default as MenuIcon } from "./MenuIcon";
+export { default as CloseIcon } from "./CloseIcon";
+export { default as BarangayIcon } from "./BarangayIcon";
+export { default as MunicipalityIcon } from "./MunicipalityIcon";
+export { default as ResidentsIcon } from "./ResidentIcon";
+export { default as DocumentIcon } from "./DocumentIcon";
+export { default as ReportIcon } from "./ReportIcon";
+export { default as UsersIcon } from "./UsersIcon";
+export { default as SecretaryRoleIcon } from "./SecretaryRoleIcon";
+export { default as MunicipalRoleIcon } from "./MunicipalRoleIcon";
+export { default as SuperadminRoleIcon } from "./SuperAdminRoleIcon";
