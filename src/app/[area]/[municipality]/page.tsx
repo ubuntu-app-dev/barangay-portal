@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import LocationSignIn from "@/components/login/LocationSignIn";
+import LocationSignIn from "@/components/login/LocationSignin";
 import LoginLoading from "@/components/login/LoginLoading";
 import { brand } from "@/lib/brand";
 import { resolveLocation } from "@/lib/geo/resolve";
 
-export const metadata: Metadata = { title: `Sign in | ${brand.name}`, robots: { index: false } };
+export const metadata: Metadata = {
+  title: `Sign in | ${brand.name}`,
+  robots: { index: false },
+};
 
 type Props = { params: Promise<{ area: string; municipality: string }> };
 
