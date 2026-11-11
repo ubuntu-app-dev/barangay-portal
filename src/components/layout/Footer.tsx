@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { Brand } from "@/components/logo";
 import { TricolorRule } from "@/components/shared";
@@ -5,6 +7,7 @@ import { container } from "@/lib/styles";
 import { brand } from "@/lib/brand";
 import { footerContent } from "@/data/footer-content";
 
+const currentYear = 2026;
 export default function Footer() {
   return (
     <footer data-surface="dark" className="brand-field-deep text-on-field">
@@ -42,7 +45,7 @@ export default function Footer() {
         className={`${container} flex flex-wrap items-center justify-between gap-3 border-t border-on-field-secondary/20 py-5 text-[13px] text-on-field-secondary`}
       >
         <p>
-          &copy; {new Date().getFullYear()} {brand.name}
+          &copy; {currentYear} {brand.name}
         </p>
         <a href="#main" className="hover:text-on-field hover:underline">
           Back to top <span aria-hidden="true">&uarr;</span>
