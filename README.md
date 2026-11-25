@@ -82,3 +82,30 @@ Choosing the last field on `/login` opens a page for that place instead of showi
 - Superadmin has no location and signs in on `/login` itself.
 
 Slugs come from the place names (`lib/slug.ts`) and are turned back into codes on the server (`lib/geo/resolve.ts`, cached for days with `"use cache"`, which needs `cacheComponents` in `next.config.ts`). Unknown slugs show the 404 page. Do not add other two- or three-segment top-level routes: these dynamic routes would shadow them.
+
+## Barangay Secretary dashboard (`/dashboard`)
+
+```
+src/
+  app/dashboard/
+    layout.tsx             Session gate + app shell (sidebar, top bar)
+    page.tsx               Dashboard overview
+    [...slug]/page.tsx     Placeholder for every menu page not built yet (checks permissions on the server)
+  config/navigation.ts     The whole menu: sections, groups, pages, restricted items, direct routes
+  components/dashboard/
+    shell/                 DashboardShell, Sidebar, Topbar, Breadcrumbs, GlobalSearch, NotificationCenter, UserMenu, LiveClock
+    overview/              WelcomeHeader, StatCards, QuickActions, BarangayInfoCard, DemographicsSection,
+                           RecentActivities, AnnouncementsPanel, TasksPanel, SubmissionsPanel, SampleDataBanner
+    modules/               ModulePlaceholder
+    ui/                    Card, DataTable, Popover, StatusBadge, EmptyState, ErrorState, Skeleton, Icon, charts/
+  lib/auth/                session.ts (getSession, requireSession), permissions.ts, logout.ts
+  lib/dashboard/           data.ts (the one place that loads dashboard data), sample-data.ts, format.ts
+  types/                   dashboard.ts, navigation.ts
+```
+
+- **Palette:** the landing-page flag blue, gold, and red, as `dash-*` tokens at the end of `app/portal.css` (plus a functional green for success badges). The sidebar is a white floating card.
+- **Menu:** edit `config/navigation.ts`. An item with `requires: "vawc:view"` shows as Restricted unless the session has that permission, and its page refuses to open without it.
+- **Barangay identity:** `requireSession()` returns the user, their one assigned barangay, and permissions. Nothing in the URL or the UI can change it.
+- **Data:** until a database is connected, `lib/dashboard/data.ts` returns sample data (shown with a "Sample data" banner) in development, and an error state in production unless `DASHBOARD_SAMPLE_DATA=true`.
+- **To connect real data:** replace `getSession()` in `lib/auth/session.ts` with a real session lookup, and the body of `getDashboardData()` with queries filtered by `session.barangay.code`. Log every record change on the server.
+- **Icons:** one set of 24px stroke icons in `ui/icon-paths.tsx`. Add a name there to add an icon.

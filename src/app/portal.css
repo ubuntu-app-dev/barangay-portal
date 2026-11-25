@@ -207,3 +207,55 @@ body {
   background: color-mix(in srgb, var(--dp-color-flag-gold) 88%, black);
   box-shadow: 0 6px 16px rgb(252 209 22 / 0.3);
 }
+
+/* Loading shimmer under a location field. */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(0 56 168 / 0.45),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.2s linear infinite;
+}
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shimmer {
+    animation: none;
+  }
+}
+
+/* Dashboard palette: the landing-page flag colors (blue, gold, red) plus a functional green for success states. */
+:root {
+  --dash-primary: var(--dp-color-accent);
+  --dash-primary-soft: #e8eefb;
+  --dash-secondary: #3b6fd8;
+  --dash-secondary-soft: #eef3fe;
+  --dash-success: #0b6b3a;
+  --dash-success-soft: #e6f2ec;
+  --dash-gold: var(--dp-color-flag-gold);
+  --dash-gold-soft: #fff6cc;
+  --dash-gold-ink: #7a5a00;
+}
+@theme inline {
+  --color-dash-primary: var(--dash-primary);
+  --color-dash-primary-soft: var(--dash-primary-soft);
+  --color-dash-secondary: var(--dash-secondary);
+  --color-dash-secondary-soft: var(--dash-secondary-soft);
+  --color-dash-success: var(--dash-success);
+  --color-dash-success-soft: var(--dash-success-soft);
+  --color-dash-gold: var(--dash-gold);
+  --color-dash-gold-soft: var(--dash-gold-soft);
+  --color-dash-gold-ink: var(--dash-gold-ink);
+}
+.dash :focus-visible {
+  outline-color: var(--dash-primary);
+}

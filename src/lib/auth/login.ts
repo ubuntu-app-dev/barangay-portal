@@ -1,21 +1,9 @@
 import { ROUTES } from "@/lib/routes";
 import type { LoginRole } from "@/types/login";
 
-export type LoginLocation = {
-  regionCode?: string;
-  provinceCode?: string;
-  municipalityCode?: string;
-  barangayCode?: string;
-};
-export type LoginPayload = {
-  role: LoginRole;
-  username: string;
-  password: string;
-  location: LoginLocation;
-};
-export type LoginResult =
-  | { ok: true; redirectTo: string }
-  | { ok: false; message: string };
+export type LoginLocation = { regionCode?: string; provinceCode?: string; municipalityCode?: string; barangayCode?: string };
+export type LoginPayload = { role: LoginRole; username: string; password: string; location: LoginLocation };
+export type LoginResult = { ok: true; redirectTo: string } | { ok: false; message: string };
 
 /**
  * Posts to /api/auth/login, which this project does not include yet.
@@ -29,27 +17,11 @@ export async function login(payload: LoginPayload): Promise<LoginResult> {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-    if (res.status === 404)
-      return {
-        ok: false,
-        message: "The sign-in service is not connected yet.",
-      };
-    const data = (await res.json().catch(() => ({}))) as {
-      message?: string;
-      redirectTo?: string;
-    };
-    if (!res.ok)
-      return {
-        ok: false,
-        message:
-          data.message ?? "Sign-in failed. Check your details and try again.",
-      };
-    return { ok: true, redirectTo: data.redirectTo ?? ROUTES.home };
+    if (res.status === 404) return { ok: false, message: "The sign-in service is not connected yet." };
+    const data = (await res.json().catch(() => ({}))) as { message?: string; redirectTo?: string };
+    if (!res.ok) return { ok: false, message: data.message ?? "Sign-in failed. Check your details and try again." };
+    return { ok: true, redirectTo: data.redirectTo ?? (payload.role === "secretary" ? ROUTES.dashboard : ROUTES.home) };
   } catch {
-    return {
-      ok: false,
-      message:
-        "Could not reach the server. Check your connection and try again.",
-    };
+    return { ok: false, message: "Could not reach the server. Check your connection and try again." };
   }
 }
