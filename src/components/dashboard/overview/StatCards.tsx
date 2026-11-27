@@ -5,17 +5,15 @@ import { routes } from "@/config/navigation";
 import { formatNumber } from "@/lib/dashboard/format";
 import type { DashboardStats } from "@/types/dashboard";
 
-type Tone = "primary" | "secondary" | "gold";
-type Card = {
+type Tone = "primary" | "secondary" | "gold" | "danger";
+type CardDef = {
   id: string;
   label: string;
   icon: IconName;
   tone: Tone;
   value: number;
   line: string;
-  now: number;
-  prev: number;
-  good?: "up" | "down";
+  trend?: { now: number; prev: number; good?: "up" | "down"; noun: string };
   href: string;
 };
 
@@ -23,94 +21,76 @@ const tiles: Record<Tone, string> = {
   primary: "bg-dash-primary-soft text-dash-primary",
   secondary: "bg-dash-secondary-soft text-dash-secondary",
   gold: "bg-dash-gold-soft text-dash-gold-ink",
+  danger: "bg-dash-danger-soft text-dash-danger",
 };
 
-function compare(now: number, prev: number, good?: "up" | "down") {
+function compare(now: number, prev: number, noun: string, good?: "up" | "down") {
   const diff = now - prev;
   const dir = diff === 0 ? "flat" : diff > 0 ? "up" : "down";
-  const text =
-    diff === 0
-      ? "Same as last month"
-      : `${formatNumber(Math.abs(diff))} ${diff > 0 ? "more" : "fewer"} than last month`;
-  const color =
-    dir === "flat" || !good
-      ? "text-ink-secondary"
-      : dir === good
-        ? "text-dash-primary"
-        : "text-flag-red";
+  const text = diff === 0 ? `Same ${noun} as last month` : `${formatNumber(Math.abs(diff))} ${diff > 0 ? "more" : "fewer"} ${noun} than last month`;
+  const color = dir === "flat" || !good ? "text-ink-secondary" : dir === good ? "text-dash-success" : "text-dash-danger";
   return { dir, text, color };
 }
 
 export default function StatCards({ stats: s }: { stats: DashboardStats }) {
-  const cards: Card[] = [
+  const cards: CardDef[] = [
     {
       id: "residents",
-      label: "Total Residents",
+      label: "Residents",
       icon: "users",
       tone: "primary",
       value: s.residents.total,
-      line: `${formatNumber(s.residents.newThisMonth)} newly registered this month`,
-      now: s.residents.newThisMonth,
-      prev: s.residents.previousMonthNew,
-      good: "up",
+      line: `${formatNumber(s.residents.newThisMonth)} registered this month`,
+      trend: { now: s.residents.newThisMonth, prev: s.residents.previousMonthNew, good: "up", noun: "new" },
       href: routes.residents,
     },
     {
       id: "households",
-      label: "Total Households",
+      label: "Households",
       icon: "home",
       tone: "secondary",
       value: s.households.total,
-      line: `${formatNumber(s.households.newThisMonth)} newly registered this month`,
-      now: s.households.newThisMonth,
-      prev: s.households.previousMonthNew,
-      good: "up",
+      line: `${formatNumber(s.households.newThisMonth)} added this month`,
+      trend: { now: s.households.newThisMonth, prev: s.households.previousMonthNew, good: "up", noun: "new" },
       href: routes.households,
     },
     {
       id: "documents",
-      label: "Documents Issued",
+      label: "Documents issued",
       icon: "fileCheck",
       tone: "primary",
       value: s.documents.total,
       line: `${formatNumber(s.documents.thisMonth)} issued this month`,
-      now: s.documents.thisMonth,
-      prev: s.documents.previousMonth,
+      trend: { now: s.documents.thisMonth, prev: s.documents.previousMonth, noun: "issued" },
       href: routes.issuanceHistory,
     },
     {
       id: "requests",
-      label: "Pending Document Requests",
+      label: "Pending requests",
       icon: "clock",
       tone: "gold",
       value: s.requests.pending,
-      line: `${formatNumber(s.requests.processing)} currently being processed`,
-      now: s.requests.pending,
-      prev: s.requests.previousPending,
-      good: "down",
+      line: `${formatNumber(s.requests.processing)} processing · ${formatNumber(s.requests.ready)} ready for release`,
+      trend: { now: s.requests.receivedThisMonth, prev: s.requests.receivedLastMonth, noun: "received" },
       href: routes.certificateRequests,
     },
     {
       id: "incidents",
-      label: "Recorded Incidents",
+      label: "Open blotter cases",
       icon: "shield",
-      tone: "secondary",
-      value: s.incidents.total,
+      tone: s.incidents.open > 0 ? "danger" : "secondary",
+      value: s.incidents.open,
       line: `${formatNumber(s.incidents.thisMonth)} recorded this month`,
-      now: s.incidents.thisMonth,
-      prev: s.incidents.previousMonth,
+      trend: { now: s.incidents.thisMonth, prev: s.incidents.previousMonth, good: "down", noun: "recorded" },
       href: routes.blotter,
     },
     {
       id: "submissions",
-      label: "Pending Municipal Submissions",
+      label: "Reports to submit",
       icon: "send",
       tone: "gold",
       value: s.submissions.awaitingSubmission,
-      line: `${formatNumber(s.submissions.awaitingReview)} awaiting municipal review`,
-      now: s.submissions.awaitingSubmission,
-      prev: s.submissions.previousAwaitingSubmission,
-      good: "down",
+      line: `${formatNumber(s.submissions.awaitingReview)} under municipal review${s.submissions.returned ? ` · ${s.submissions.returned} returned` : ""}`,
       href: routes.pendingSubmissions,
     },
   ];
@@ -119,42 +99,34 @@ export default function StatCards({ stats: s }: { stats: DashboardStats }) {
     <section aria-label="Statistics overview">
       <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {cards.map((c) => {
-          const t = compare(c.now, c.prev, c.good);
+          const t = c.trend ? compare(c.trend.now, c.trend.prev, c.trend.noun, c.trend.good) : null;
           return (
             <li key={c.id}>
               <Link
                 href={c.href}
-                className="block h-full rounded-xl border border-rule bg-panel p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-dash-primary hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                className="surface group flex h-full flex-col p-5 transition hover:-translate-y-0.5 hover:border-dash-primary/40 hover:shadow-card-hover motion-reduce:transition-none motion-reduce:hover:translate-y-0"
               >
-                <div className="flex items-center gap-3">
-                  <span
-                    className={`flex h-11 w-11 items-center justify-center rounded-xl ${tiles[c.tone]}`}
-                  >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-[13.5px] font-semibold text-ink-secondary">{c.label}</p>
+                    <p className="mt-2 font-display text-[34px] font-bold leading-none tracking-[-0.03em] tabular-nums">{formatNumber(c.value)}</p>
+                  </div>
+                  <span className={`flex h-11 w-11 items-center justify-center rounded-2xl ${tiles[c.tone]}`}>
                     <Icon name={c.icon} className="h-5 w-5" />
                   </span>
-                  <p className="text-[14px] font-semibold text-ink-secondary">
-                    {c.label}
-                  </p>
                 </div>
-                <p className="mt-4 font-display text-4xl font-bold tracking-[-0.03em] tabular-nums">
-                  {formatNumber(c.value)}
-                </p>
-                <p className="mt-1 text-[14px] text-ink-secondary">{c.line}</p>
-                <p
-                  className={`mt-3 flex items-center gap-1.5 border-t border-rule pt-3 text-[13px] font-semibold ${t.color}`}
-                >
-                  <Icon
-                    name={
-                      t.dir === "up"
-                        ? "trendUp"
-                        : t.dir === "down"
-                          ? "trendDown"
-                          : "minus"
-                    }
-                    className="h-4 w-4"
-                  />
-                  {t.text}
-                </p>
+                <p className="mt-2 text-[13.5px] text-ink-secondary">{c.line}</p>
+                <div className="mt-auto flex items-center justify-between gap-2 border-t border-rule/80 pt-3 text-[12.5px] font-semibold">
+                  {t ? (
+                    <span className={`flex items-center gap-1.5 ${t.color}`}>
+                      <Icon name={t.dir === "up" ? "trendUp" : t.dir === "down" ? "trendDown" : "minus"} className="h-4 w-4" />
+                      {t.text}
+                    </span>
+                  ) : (
+                    <span className="text-ink-secondary">From municipal requirements</span>
+                  )}
+                  <Icon name="arrowRight" className="h-4 w-4 text-ink-secondary transition-transform group-hover:translate-x-0.5 group-hover:text-dash-primary" />
+                </div>
               </Link>
             </li>
           );

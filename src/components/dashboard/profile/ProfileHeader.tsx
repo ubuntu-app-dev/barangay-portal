@@ -1,4 +1,3 @@
-import SampleDataBanner from "@/components/dashboard/overview/SampleDataBanner";
 import Icon from "@/components/dashboard/ui/Icon";
 import type { IconName } from "@/components/dashboard/ui/icon-paths";
 import { formatNumber } from "@/lib/dashboard/format";
@@ -9,13 +8,12 @@ export default function ProfileHeader({ profile }: { profile: BarangayProfile })
   const facts: { icon: IconName; label: string; value: string }[] = [
     { icon: "users", label: "Population", value: formatNumber(glance.population) },
     { icon: "home", label: "Households", value: formatNumber(glance.households) },
-    { icon: "expand", label: "Land area", value: `${g.landAreaHectares} ha` },
+    { icon: "expand", label: "Land area", value: g.landAreaHectares ? `${g.landAreaHectares} ha` : "Not set" },
   ];
   return (
     <div className="space-y-4">
-      {profile.source === "sample" && <SampleDataBanner />}
-      <section aria-label="Barangay summary" className="overflow-hidden rounded-3xl border border-rule bg-panel shadow-sm">
-        <div aria-hidden="true" className="h-24 bg-[linear-gradient(120deg,#dfe8fb_0%,#eef3fe_55%,#fff6cc_100%)]" />
+      <section aria-label="Barangay summary" className="surface overflow-hidden !rounded-3xl">
+        <div aria-hidden="true" className="h-24 bg-[linear-gradient(120deg,#0038a8_0%,#2a62d9_60%,#fcd116_140%)]" />
         <div className="px-5 pb-6 sm:px-8">
           <div className="-mt-12 flex flex-wrap items-end gap-x-6 gap-y-4">
             <span aria-hidden="true" className="flex h-24 w-24 shrink-0 items-center justify-center rounded-3xl border-4 border-white bg-brand text-white shadow-md"><Icon name="building" className="h-10 w-10" /></span>
@@ -25,7 +23,7 @@ export default function ProfileHeader({ profile }: { profile: BarangayProfile })
               <ul className="mt-3 flex flex-wrap gap-2 text-[12px] font-semibold">
                 <li className="rounded-full bg-brand/10 px-3 py-1 text-brand">PSGC {g.code}</li>
                 <li className="rounded-full bg-ground-muted px-3 py-1 text-ink-secondary">{g.classification} barangay</li>
-                <li className="rounded-full bg-dash-gold-soft px-3 py-1 text-dash-gold-ink">Established {g.dateEstablished.slice(0, 4)}</li>
+                {g.dateEstablished && <li className="rounded-full bg-dash-gold-soft px-3 py-1 text-dash-gold-ink">Established {g.dateEstablished.slice(0, 4)}</li>}
               </ul>
             </div>
             <dl className="grid w-full grid-cols-3 gap-3 sm:w-auto">

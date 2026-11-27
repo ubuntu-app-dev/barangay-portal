@@ -1,8 +1,8 @@
 # LGU Connect: Barangay Information System and Municipal System
 
-Centralized LGU platform with two systems (Barangay Information System, Municipal System) and three user levels (Barangay Secretary, Municipal Personnel, Superadmin).
+Centralized LGU platform with two systems (Barangay Information System, Municipal System) and four user levels (Barangay Secretary, Municipal Personnel, Municipal IT Admin, Superadmin).
 
-**Stack:** Next.js (App Router, TypeScript) · Tailwind CSS v4 · Framer Motion · Vengeance UI components (shadcn registry)
+**Stack:** Next.js 16 (App Router, TypeScript) · PostgreSQL + Prisma 7 · Tailwind CSS v4 · Framer Motion
 
 ## Setup
 
@@ -70,7 +70,7 @@ Pick a role, then narrow the location before the credentials appear: Barangay Se
 
 - Location data comes from the free PSGC API (`psgc.gitlab.io/api`), called only from the server in `lib/geo/psgc.ts` and exposed to the browser through `app/api/geo/route.ts` (inputs validated, cached for a day).
 - Official PSA API: set `PSA_PSGC_TOKEN` (and `PSA_PSGC_VERSION`, e.g. `Q2_2024`) in `.env.local`, and `lib/geo/index.ts` switches to `lib/geo/psa.ts` automatically. Remove the token and it falls back to the free API. Verify first with `node --env-file=.env.local scripts/check-psa.mjs`. PSA codes are 10 digits (the free API's are 9), so pick one before storing locations in your database.
-- `lib/auth/login.ts` posts to `/api/auth/login`, which is **not included**. That endpoint must verify the password and confirm the account belongs to the chosen role and location; the dropdowns are not a security control. Use HTTP-only cookies for the session and rate-limit attempts.
+- `lib/auth/login.ts` posts to `/api/auth/login`, which verifies the password and that the account belongs to the chosen role and location (the dropdowns are not a security control). The municipal page accepts both Municipal Personnel and the Municipal IT Admin.
 
 ### Sign-in URLs
 
@@ -83,29 +83,64 @@ Choosing the last field on `/login` opens a page for that place instead of showi
 
 Slugs come from the place names (`lib/slug.ts`) and are turned back into codes on the server (`lib/geo/resolve.ts`, cached for days with `"use cache"`, which needs `cacheComponents` in `next.config.ts`). Unknown slugs show the 404 page. Do not add other two- or three-segment top-level routes: these dynamic routes would shadow them.
 
+## Database (PostgreSQL + Prisma 7)
+
+One schema for all four user levels: `prisma/schema.prisma`. The full plan is in `docs/ROADMAP.md`.
+
+```bash
+# .env.local
+DATABASE_URL="postgresql://postgres:YOUR_PASSWORD@localhost:5432/lgu_connect?schema=public"
+
+createdb lgu_connect            # or create it in pgAdmin
+npm install                     # also generates the Prisma client (postinstall)
+npm run db:migrate              # apply migrations
+npm run db:seed                 # sample data (fictional people, real PSGC codes for Pila, Laguna)
+npm run dev
+```
+
+Other scripts: `npm run db:reset` (drop, migrate, seed), `npm run db:studio` (browse data), `npm run db:backup` (dump to `backups/`, keeps 14), `npm run typecheck`.
+
+Seed accounts (password `Password123`):
+
+| Role | Username | Sign in at |
+| --- | --- | --- |
+| Barangay Secretary (with VAWC access) | `bagongpook.sec` | `/laguna/pila/bagong-pook` |
+| Barangay Secretary | `labuin.sec` | `/laguna/pila/labuin` |
+| Municipal Personnel | `pila.mpdo` | `/laguna/pila` |
+| Municipal IT Admin | `pila.admin` | `/laguna/pila` |
+| Superadmin | `superadmin` | `/login` |
+
+## Signed-in areas
+
+| Role | Area | Menu |
+| --- | --- | --- |
+| Barangay Secretary | `/dashboard` | `config/navigation.ts` |
+| Municipal Personnel | `/municipal` | `config/workspaces.ts` |
+| Municipal IT Admin | `/admin` | `config/workspaces.ts` |
+| Superadmin | `/superadmin` | `config/workspaces.ts` |
+
+All four share `components/dashboard/shell` (pass the workspace key). Staff pages call `requireRole(...)` from `lib/auth/staff.ts`; secretary pages call `requireSession()`. Settings and notification pages are shared components (`components/settings`, `components/announcements/NotificationsView`).
+
 ## Barangay Secretary dashboard (`/dashboard`)
 
 ```
 src/
-  app/dashboard/
-    layout.tsx             Session gate + app shell (sidebar, top bar)
-    page.tsx               Dashboard overview
-    [...slug]/page.tsx     Placeholder for every menu page not built yet (checks permissions on the server)
-  config/navigation.ts     The whole menu: sections, groups, pages, restricted items, direct routes
-  components/dashboard/
-    shell/                 DashboardShell, Sidebar, Topbar, Breadcrumbs, GlobalSearch, NotificationCenter, UserMenu, LiveClock
-    overview/              WelcomeHeader, StatCards, QuickActions, BarangayInfoCard, DemographicsSection,
-                           RecentActivities, AnnouncementsPanel, TasksPanel, SubmissionsPanel, SampleDataBanner
-    modules/               ModulePlaceholder
-    ui/                    Card, DataTable, Popover, StatusBadge, EmptyState, ErrorState, Skeleton, Icon, charts/
-  lib/auth/                session.ts (getSession, requireSession), permissions.ts, logout.ts
-  lib/dashboard/           data.ts (the one place that loads dashboard data), sample-data.ts, format.ts
-  types/                   dashboard.ts, navigation.ts
+  app/api/auth/              login and logout (HTTP-only session cookie, lockout after 5 failures)
+  app/api/dashboard/         lookup (resident/household pickers, search) and export/[kind] (CSV)
+  app/dashboard/             one folder per menu section; detail pages use [id]
+  config/navigation.ts       the whole menu and the route map
+  server/                    server-only code
+    db.ts, auth.ts, audit.ts   Prisma client, sessions and role permissions, audit log and running numbers
+    queries/                 reads, always filtered by the session's barangay code
+    actions/                 server actions (validated with zod, re-check the session, write the audit log)
+    reports.ts               report generator shared by Reports, Generate, Submissions, and CSV
+  components/dashboard/ui/   design system: Card, Table, ListToolbar, Pagination, form, Dialog, RecordPicker…
+  lib/labels.ts              display text for database enums
 ```
 
-- **Palette:** the landing-page flag blue, gold, and red, as `dash-*` tokens at the end of `app/portal.css` (plus a functional green for success badges). The sidebar is a white floating card.
-- **Menu:** edit `config/navigation.ts`. An item with `requires: "vawc:view"` shows as Restricted unless the session has that permission, and its page refuses to open without it.
-- **Barangay identity:** `requireSession()` returns the user, their one assigned barangay, and permissions. Nothing in the URL or the UI can change it.
-- **Data:** until a database is connected, `lib/dashboard/data.ts` returns sample data (shown with a "Sample data" banner) in development, and an error state in production unless `DASHBOARD_SAMPLE_DATA=true`.
-- **To connect real data:** replace `getSession()` in `lib/auth/session.ts` with a real session lookup, and the body of `getDashboardData()` with queries filtered by `session.barangay.code`. Log every record change on the server.
-- **Icons:** one set of 24px stroke icons in `ui/icon-paths.tsx`. Add a name there to add an icon.
+- **Scope:** every query and action uses `session.barangay.code` from the database session. Nothing in the URL can change it.
+- **Lists** are server-rendered; search, filters, and page live in the URL.
+- **Forms** use `ActionForm` + a server action returning `{ ok, message, errors }`; values stay put on errors.
+- **Every change** is written to `AuditLog` (Activity pages, change history on each record).
+- **VAWC** entries need the `vawc:view` permission and are excluded from every other list, report, and export.
+- **Design:** flag blue, gold, and red tokens in `app/portal.css` (`dash-*`), component classes in `@layer components` so Tailwind utilities can override them.

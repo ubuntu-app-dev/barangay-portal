@@ -1,26 +1,34 @@
 export type Session = {
-  user: { id: string; name: string; position: string; role: "secretary" };
+  user: {
+    id: string;
+    username: string;
+    name: string;
+    firstName: string;
+    position: string;
+    email: string | null;
+    role: "secretary";
+    mustChangePassword: boolean;
+  };
   /** Comes from the signed-in account. The user can never pick or change it. */
   barangay: {
     code: string;
     name: string;
     municipality: string;
+    municipalityCode: string;
     province: string;
   };
   permissions: string[];
 };
 
+export type Trend = { now: number; prev: number; good?: "up" | "down" };
+
 export type DashboardStats = {
   residents: { total: number; newThisMonth: number; previousMonthNew: number };
   households: { total: number; newThisMonth: number; previousMonthNew: number };
   documents: { total: number; thisMonth: number; previousMonth: number };
-  requests: { pending: number; processing: number; previousPending: number };
-  incidents: { total: number; thisMonth: number; previousMonth: number };
-  submissions: {
-    awaitingSubmission: number;
-    awaitingReview: number;
-    previousAwaitingSubmission: number;
-  };
+  requests: { pending: number; processing: number; ready: number; receivedThisMonth: number; receivedLastMonth: number };
+  incidents: { open: number; thisMonth: number; previousMonth: number };
+  submissions: { awaitingSubmission: number; awaitingReview: number; returned: number };
 };
 
 export type ChartDatum = { label: string; value: number };
@@ -31,56 +39,39 @@ export type Demographics = {
   classification: ChartDatum[];
 };
 
-export type ActivityStatus =
-  | "Completed"
-  | "In Progress"
-  | "Pending"
-  | "Needs Attention";
 export type Activity = {
   id: string;
-  activity: string;
+  action: string;
+  entity: string;
   description: string;
   performedBy: string;
   at: string;
-  status: ActivityStatus;
 };
 
-export type Priority = "Urgent" | "High" | "Normal";
 export type Announcement = {
   id: string;
   title: string;
   summary: string;
   office: string;
   publishedAt: string;
-  priority: Priority;
+  priority: "Urgent" | "High" | "Normal";
 };
 
-export type TaskStatus =
-  | "Pending"
-  | "In Progress"
-  | "Submitted"
-  | "Approved"
-  | "Returned for Revision"
-  | "Overdue";
 export type Task = {
   id: string;
   title: string;
   category: string;
-  due: string;
-  status: TaskStatus;
+  due: string | null;
+  status: string;
+  href: string;
 };
 
-export type SubmissionStatus =
-  | "Received"
-  | "Under Review"
-  | "Approved"
-  | "Returned for Revision";
 export type Submission = {
   id: string;
   report: string;
-  submittedAt: string;
+  submittedAt: string | null;
   office: string;
-  status: SubmissionStatus;
+  status: string;
   remarks: string;
 };
 
@@ -94,13 +85,12 @@ export type AppNotification = {
 };
 
 export type DashboardData = {
-  /** "sample" means placeholder data for UI prototyping, never real barangay records. */
-  source: "sample" | "live";
   barangayInfo: {
     captain: string;
     secretary: string;
     totalResidents: number;
     totalHouseholds: number;
+    puroks: number;
   };
   stats: DashboardStats;
   demographics: Demographics;

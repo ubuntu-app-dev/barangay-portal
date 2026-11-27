@@ -13,10 +13,7 @@ export default function BarangayProfileLayout({
   return (
     <div className="space-y-6">
       <Suspense fallback={<HeaderSkeleton />}>
-        <WithProfile
-          errorFallback={null}
-          render={(profile) => <ProfileHeader profile={profile} />}
-        />
+        <WithProfile render={(profile) => <ProfileHeader profile={profile} />} />
       </Suspense>
       <ProfileTabs />
       {children}

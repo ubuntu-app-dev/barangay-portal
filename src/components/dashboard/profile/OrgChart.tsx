@@ -11,8 +11,8 @@ function Node({ title, name, featured = false }: { title: string; name: string; 
 
 /** Punong Barangay at the top, the other officers below. Connector lines show from tablet width up. */
 export default function OrgChart({ officials }: { officials: Official[] }) {
-  const find = (p: Official["position"]) => officials.find((o) => o.position === p);
-  const kagawads = officials.filter((o) => o.position === "Barangay Kagawad").length;
+  const find = (p: string) => officials.find((o) => o.isActive && o.position === p);
+  const kagawads = officials.filter((o) => o.isActive && o.position === "Barangay Kagawad").length;
   const children = [
     { title: "Sangguniang Barangay", name: `${kagawads} Barangay Kagawad` },
     { title: "SK Chairperson", name: find("SK Chairperson")?.name ?? "Vacant" },

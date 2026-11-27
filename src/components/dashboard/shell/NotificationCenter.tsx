@@ -3,20 +3,27 @@ import Link from "next/link";
 import { useState } from "react";
 import Icon from "@/components/dashboard/ui/Icon";
 import Popover from "@/components/dashboard/ui/Popover";
-import { routes } from "@/config/navigation";
+import { WORKSPACES, type WorkspaceKey } from "@/config/workspaces";
 import { formatDateTime } from "@/lib/dashboard/format";
+import { markAllNotificationsRead, markNotificationRead } from "@/server/actions/notifications";
 import type { AppNotification } from "@/types/dashboard";
 
 export default function NotificationCenter({
+  ws,
   items,
 }: {
+  ws: WorkspaceKey;
   items: AppNotification[];
 }) {
   const [readIds, setReadIds] = useState<Set<string>>(
     () => new Set(items.filter((i) => i.read).map((i) => i.id)),
   );
   const unread = items.filter((i) => !readIds.has(i.id)).length;
-  const markRead = (id: string) => setReadIds((s) => new Set(s).add(id));
+  // Optimistic: the dot disappears at once, the server records it in the background.
+  const markRead = (id: string) => {
+    setReadIds((s) => new Set(s).add(id));
+    void markNotificationRead(id);
+  };
 
   return (
     <Popover
@@ -44,7 +51,10 @@ export default function NotificationCenter({
             {unread > 0 && (
               <button
                 type="button"
-                onClick={() => setReadIds(new Set(items.map((i) => i.id)))}
+                onClick={() => {
+                  setReadIds(new Set(items.map((i) => i.id)));
+                  void markAllNotificationsRead();
+                }}
                 className="text-[13px] font-semibold text-dash-primary hover:underline"
               >
                 Mark all as read
@@ -92,7 +102,7 @@ export default function NotificationCenter({
           )}
           <div className="border-t border-rule px-4 py-3 text-center">
             <Link
-              href={routes.notifications}
+              href={WORKSPACES[ws].links.notifications}
               onClick={close}
               className="text-[13px] font-semibold text-dash-primary hover:underline"
             >

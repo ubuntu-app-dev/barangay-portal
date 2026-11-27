@@ -5,9 +5,10 @@ import { ShellSkeleton } from "@/components/dashboard/ui/Skeleton";
 import { requireSession } from "@/lib/auth/session";
 import { brand } from "@/lib/brand";
 import { getNavBadges, getNotifications } from "@/lib/dashboard/data";
+import { getSettings } from "@/server/settings";
 
 export const metadata: Metadata = {
-  title: `Dashboard | ${brand.name}`,
+  title: { default: `Dashboard | ${brand.name}`, template: `%s | ${brand.name}` },
   robots: { index: false },
 };
 
@@ -20,8 +21,10 @@ async function Gate({ children }: { children: ReactNode }) {
   ]);
   return (
     <DashboardShell
+      ws="secretary"
       user={session.user}
-      barangay={session.barangay}
+      scopeLabel={session.barangay.name}
+      banner={(await getSettings()).maintenanceBanner}
       permissions={session.permissions}
       notifications={notifications}
       badges={badges}

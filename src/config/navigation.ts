@@ -185,7 +185,25 @@ export const routes = {
   help: `${BASE}/help`,
   addResident: `${BASE}/resident-management/add-new-resident`,
   households: `${BASE}/resident-management/household-records`,
+  newHousehold: `${BASE}/resident-management/household-records/new`,
   residents: `${BASE}/resident-management/resident-records`,
+  families: `${BASE}/resident-management/family-composition`,
+  classification: `${BASE}/resident-management/resident-classification`,
+  printDocument: `${BASE}/document-management/print`,
+  complaints: `${BASE}/blotter-and-incident-management/complaint-records`,
+  cases: `${BASE}/blotter-and-incident-management/case-monitoring`,
+  kp: `${BASE}/blotter-and-incident-management/katarungang-pambarangay`,
+  vawc: `${BASE}/blotter-and-incident-management/vawc-records`,
+  animals: `${BASE}/community-resources/animal-records-and-tracking`,
+  water: `${BASE}/community-resources/water-service-classification`,
+  resources: `${BASE}/community-resources/community-resource-records`,
+  submissionStatus: `${BASE}/municipal-submissions/submission-status`,
+  barangayAnnouncements: `${BASE}/announcements-and-communications/barangay-announcements`,
+  advisories: `${BASE}/announcements-and-communications/important-advisories`,
+  recordUpdates: `${BASE}/activity-history/record-update-history`,
+  officials: `${BASE}/barangay-profile/barangay-officials`,
+  organization: `${BASE}/barangay-profile/organizational-information`,
+  contacts: `${BASE}/barangay-profile/barangay-contact-details`,
   issueCertificate: `${BASE}/document-management/certificate-issuance`,
   issuanceHistory: `${BASE}/document-management/issuance-history`,
   certificateRequests: `${BASE}/document-management/certificate-requests`,
@@ -240,3 +258,12 @@ export function flattenNav(): NavEntry[] {
 
 export const findNavEntry = (href: string) =>
   flattenNav().find((e) => e.href === href) ?? null;
+
+/** The deepest menu page that contains this path (for detail pages like …/resident-records/abc123/edit). */
+export function findNavAncestor(pathname: string): { entry: NavEntry; rest: string[] } | null {
+  let best: NavEntry | null = null;
+  for (const e of flattenNav())
+    if ((pathname === e.href || pathname.startsWith(`${e.href}/`)) && e.href !== BASE && (!best || e.href.length > best.href.length)) best = e;
+  if (!best) return null;
+  return { entry: best, rest: pathname.slice(best.href.length).split("/").filter(Boolean) };
+}

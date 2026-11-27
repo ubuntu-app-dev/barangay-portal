@@ -4,11 +4,12 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Logo } from "@/components/logo";
 import Icon from "@/components/dashboard/ui/Icon";
-import { hrefOf, navSections, routes } from "@/config/navigation";
+import { hrefIn, WORKSPACES, type WorkspaceKey } from "@/config/workspaces";
 import { can } from "@/lib/auth/permissions";
 import { brand } from "@/lib/brand";
 
 type Props = {
+  ws: WorkspaceKey;
   collapsed: boolean;
   mobileOpen: boolean;
   permissions: string[];
@@ -23,6 +24,7 @@ type Props = {
 
 /** A white, floating menu card. Collapses to an icon rail on desktop and slides in as a drawer on phones. */
 export default function Sidebar({
+  ws: wsKey,
   collapsed,
   mobileOpen,
   permissions,
@@ -34,6 +36,9 @@ export default function Sidebar({
   onLogout,
 }: Props) {
   const pathname = usePathname();
+  const ws = WORKSPACES[wsKey];
+  const navSections = ws.sections;
+  const hrefOf = (i: Parameters<typeof hrefIn>[1], c?: Parameters<typeof hrefIn>[2]) => hrefIn(ws, i, c);
   const [open, setOpen] = useState<Set<string>>(
     () =>
       new Set(
@@ -63,7 +68,7 @@ export default function Sidebar({
     "relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] transition-colors motion-reduce:transition-none";
   const rowTone = (active: boolean) =>
     active
-      ? "bg-brand/10 font-semibold text-brand"
+      ? "bg-brand/10 font-semibold text-brand before:absolute before:inset-y-2 before:left-0 before:w-[3px] before:rounded-r-full before:bg-brand"
       : "font-medium text-ink hover:bg-ground-muted";
   const centered = collapsed ? "lg:justify-center lg:px-0" : "";
 
@@ -92,7 +97,7 @@ export default function Sidebar({
               {brand.name}
             </p>
             <p className="truncate text-[12px] text-ink-secondary">
-              Barangay Secretary
+              {ws.label}
             </p>
           </div>
         </div>
@@ -131,7 +136,7 @@ export default function Sidebar({
                 const hasKids = !!item.children?.length;
                 const active = hasKids
                   ? pathname.startsWith(href)
-                  : pathname === href;
+                  : pathname === href || (href !== ws.base && pathname.startsWith(`${href}/`));
                 const isOpen = open.has(item.id);
                 const listId = `nav-${item.id}`;
 
@@ -213,7 +218,7 @@ export default function Sidebar({
                                 href={childHref}
                                 onClick={onNavigate}
                                 aria-current={childActive ? "page" : undefined}
-                                className={`block rounded-lg px-3 py-1.5 text-[13px] transition-colors motion-reduce:transition-none ${childActive ? "bg-brand/10 font-semibold text-brand" : "text-ink-secondary hover:bg-ground-muted hover:text-ink"}`}
+                                className={`relative block rounded-lg px-3 py-1.5 text-[13px] transition-colors motion-reduce:transition-none ${childActive ? "bg-brand/10 font-semibold text-brand before:absolute before:-left-[13px] before:inset-y-1.5 before:w-[2px] before:rounded-full before:bg-brand" : "text-ink-secondary hover:bg-ground-muted hover:text-ink"}`}
                               >
                                 {c.label}
                               </Link>
@@ -232,7 +237,7 @@ export default function Sidebar({
 
       <div className="border-t border-rule p-3">
         <Link
-          href={routes.accountProfile}
+          href={ws.links.account}
           onClick={onNavigate}
           title={collapsed ? user.name : undefined}
           className={`flex items-center gap-3 rounded-xl p-2 hover:bg-ground-muted ${collapsed ? "lg:justify-center" : ""}`}

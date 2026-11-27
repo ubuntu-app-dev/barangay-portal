@@ -1,29 +1,36 @@
+import "server-only";
 import { redirect } from "next/navigation";
-import { sampleSession } from "@/lib/dashboard/sample-data";
 import { ROUTES } from "@/lib/routes";
+import { getAuthUser, ROLE_HOME } from "@/server/auth";
 import type { Session } from "@/types/dashboard";
 
-/** Sample data is on in development, and in production only when DASHBOARD_SAMPLE_DATA=true. */
-export function sampleDataEnabled(): boolean {
-  const flag = process.env.DASHBOARD_SAMPLE_DATA;
-  if (flag === "true") return true;
-  if (flag === "false") return false;
-  return process.env.NODE_ENV === "development";
-}
-
 /**
- * TODO: replace with the real lookup. Read the HTTP-only session cookie, verify it on the server,
- * and return the user, their ONE assigned barangay, and their permissions from the database.
- * The barangay must never come from the URL or from anything the user can edit.
+ * The signed-in Barangay Secretary, their ONE assigned barangay, and their permissions, all from the database.
+ * The barangay never comes from the URL or from anything the user can edit.
  */
 export async function getSession(): Promise<Session | null> {
-  if (sampleDataEnabled()) return sampleSession;
-  return null;
+  const u = await getAuthUser();
+  if (!u || u.role !== "BARANGAY_SECRETARY" || !u.barangay) return null;
+  return {
+    user: {
+      id: u.id,
+      username: u.username,
+      name: u.name,
+      firstName: u.firstName,
+      position: u.position || "Barangay Secretary",
+      email: u.email,
+      role: "secretary",
+      mustChangePassword: u.mustChangePassword,
+    },
+    barangay: u.barangay,
+    permissions: u.permissions,
+  };
 }
 
+/** For pages and server actions in the secretary dashboard. Other roles go to their own home. */
 export async function requireSession(): Promise<Session> {
   const session = await getSession();
-  if (!session) redirect(ROUTES.login);
-  return session;
+  if (session) return session;
+  const u = await getAuthUser();
+  redirect(u ? ROLE_HOME[u.role] : ROUTES.login);
 }
-

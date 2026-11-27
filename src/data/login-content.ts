@@ -6,7 +6,7 @@ export const loginRoles: { id: LoginRole; label: string; system: string }[] = [
     label: "Barangay Secretary",
     system: "Barangay Information System",
   },
-  { id: "municipal", label: "Municipal Personnel", system: "Municipal System" },
+  { id: "municipal", label: "Municipal Staff", system: "Municipal System (personnel and IT admin)" },
   { id: "superadmin", label: "Superadmin", system: "Both systems" },
 ];
 
@@ -17,7 +17,7 @@ export const roleCopy: Record<LoginRole, { title: string; text: string }> = {
   },
   municipal: {
     title: "Which municipality do you serve?",
-    text: "Choose your region, province, and municipality. Then sign in to the Municipal System.",
+    text: "Choose your region, province, and municipality. Municipal personnel and the municipal IT administrator both sign in here.",
   },
   superadmin: {
     title: "Welcome back, Superadmin.",

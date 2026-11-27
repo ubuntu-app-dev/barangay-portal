@@ -1,25 +1,39 @@
+import Link from "next/link";
 import Card from "@/components/dashboard/ui/Card";
 import EmptyState from "@/components/dashboard/ui/EmptyState";
+import Icon from "@/components/dashboard/ui/Icon";
 import StatusBadge from "@/components/dashboard/ui/StatusBadge";
 import { routes } from "@/config/navigation";
 import { formatDate } from "@/lib/dashboard/format";
 import type { Task } from "@/types/dashboard";
 
-export default function TasksPanel({ items }: { items: Task[] }) {
+export default function TasksPanel({ items, className = "" }: { items: Task[]; className?: string }) {
   return (
-    <Card title="Pending Tasks and Reminders" actionLabel="View pending" actionHref={routes.pendingSubmissions}>
+    <Card title="Tasks and Deadlines" icon="clipboard" actionLabel="Pending reports" actionHref={routes.pendingSubmissions} className={className} bodyClassName="p-2">
       {items.length === 0 ? (
-        <EmptyState icon="clipboard" title="You are all caught up" text="Tasks, deadlines, and municipal requirements will show up here." />
+        <EmptyState icon="checkCircle" title="You are all caught up" text="Municipal requirements, open requests, and case deadlines will show up here." />
       ) : (
-        <ul className="divide-y divide-rule">
+        <ul>
           {items.map((t) => (
-            <li key={t.id} className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2 py-3 first:pt-0 last:pb-0">
-              <div className="min-w-0">
-                <p className="text-[14px] font-semibold">{t.title}</p>
-                <p className="text-[13px] text-ink-secondary">{t.category}</p>
-                <p className={`mt-1 text-[13px] ${t.status === "Overdue" ? "font-semibold text-flag-red" : "text-ink-secondary"}`}>Due {formatDate(t.due)}</p>
-              </div>
-              <StatusBadge status={t.status} />
+            <li key={t.id}>
+              <Link href={t.href} className="group flex items-start justify-between gap-3 rounded-xl px-3 py-3 hover:bg-ground-muted/70">
+                <div className="min-w-0">
+                  <p className="text-[14px] font-semibold leading-snug group-hover:text-dash-primary">{t.title}</p>
+                  <p className="mt-0.5 text-[12.5px] text-ink-secondary">
+                    {t.category}
+                    {t.due && (
+                      <>
+                        {" · "}
+                        <span className={t.status === "Overdue" ? "font-semibold text-dash-danger" : ""}>Due {formatDate(t.due)}</span>
+                      </>
+                    )}
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  <StatusBadge status={t.status} />
+                  <Icon name="chevronRight" className="h-4 w-4 text-ink-secondary" />
+                </div>
+              </Link>
             </li>
           ))}
         </ul>

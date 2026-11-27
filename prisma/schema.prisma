@@ -1,0 +1,976 @@
+// LGU Connect: Barangay Information System + Municipal System
+// One schema for all four user levels:
+//   BARANGAY_SECRETARY  one barangay       (residents, documents, blotter, resources, reports, submissions)
+//   MUNICIPAL_PERSONNEL one municipality   (review submissions, publish announcements, consolidated reports)
+//   MUNICIPAL_ADMIN     one municipality   (IT: user accounts, barangay onboarding, document templates, audit)
+//   SUPERADMIN          everything         (all municipalities, system settings)
+//
+// Conventions
+// - Geography uses 10-digit PSGC codes as primary keys (same codes the sign-in page sends).
+// - Every barangay-owned row carries `barangayCode`. Queries MUST filter by the code from the session.
+// - Soft delete (`deletedAt`) on records people might need back; hard delete for lookups.
+// - Every change is written to AuditLog by the server, never by the client.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ───────────────────────────── Enums ─────────────────────────────
+
+enum Role {
+  BARANGAY_SECRETARY
+  MUNICIPAL_PERSONNEL
+  MUNICIPAL_ADMIN
+  SUPERADMIN
+}
+
+enum AccountStatus {
+  ACTIVE
+  SUSPENDED
+  DEACTIVATED
+}
+
+enum Classification {
+  URBAN
+  RURAL
+}
+
+enum Sex {
+  MALE
+  FEMALE
+}
+
+enum CivilStatus {
+  SINGLE
+  MARRIED
+  WIDOWED
+  SEPARATED
+  ANNULLED
+  LIVE_IN
+}
+
+enum ResidentStatus {
+  ACTIVE
+  MOVED_OUT
+  DECEASED
+}
+
+enum Relationship {
+  HEAD
+  SPOUSE
+  SON
+  DAUGHTER
+  FATHER
+  MOTHER
+  SIBLING
+  GRANDCHILD
+  GRANDPARENT
+  IN_LAW
+  RELATIVE
+  BOARDER
+  HELPER
+  OTHER
+}
+
+enum Education {
+  NONE
+  ELEMENTARY_LEVEL
+  ELEMENTARY_GRADUATE
+  HIGH_SCHOOL_LEVEL
+  HIGH_SCHOOL_GRADUATE
+  SENIOR_HIGH
+  VOCATIONAL
+  COLLEGE_LEVEL
+  COLLEGE_GRADUATE
+  POST_GRADUATE
+}
+
+enum TenureStatus {
+  OWNED
+  RENTED
+  SHARED
+  INFORMAL
+  OTHER
+}
+
+/// DOH / NWRB service levels used for the Water Service Classification page.
+enum WaterSource {
+  LEVEL_I // point source: well, spring, hand pump
+  LEVEL_II // communal faucet
+  LEVEL_III // individual house connection
+  DELIVERED // refilling station / tanker
+  OTHER
+}
+
+enum ToiletType {
+  WATER_SEALED
+  POUR_FLUSH
+  PIT_LATRINE
+  SHARED
+  NONE
+}
+
+enum DocumentCategory {
+  CERTIFICATE
+  OTHER
+}
+
+enum RequestChannel {
+  WALK_IN
+  ONLINE
+}
+
+enum RequestStatus {
+  PENDING
+  PROCESSING
+  READY_FOR_RELEASE
+  RELEASED
+  REJECTED
+  CANCELLED
+}
+
+enum IssuedStatus {
+  VALID
+  VOIDED
+}
+
+enum BlotterKind {
+  INCIDENT
+  COMPLAINT
+}
+
+enum BlotterStatus {
+  OPEN
+  UNDER_MEDIATION
+  UNDER_CONCILIATION
+  UNDER_ARBITRATION
+  SETTLED
+  REFERRED
+  CERTIFIED_TO_FILE_ACTION
+  DISMISSED
+  CLOSED
+}
+
+/// Katarungang Pambarangay stage (RA 7160, Sec. 399-422).
+enum KpStage {
+  MEDIATION
+  CONCILIATION
+  ARBITRATION
+}
+
+enum PartyRole {
+  COMPLAINANT
+  RESPONDENT
+  VICTIM
+  WITNESS
+}
+
+enum HearingOutcome {
+  SCHEDULED
+  HELD
+  RESCHEDULED
+  NO_SHOW
+  SETTLED
+  FAILED
+}
+
+enum Species {
+  DOG
+  CAT
+  CARABAO
+  CATTLE
+  GOAT
+  PIG
+  HORSE
+  POULTRY
+  OTHER
+}
+
+enum AnimalStatus {
+  ACTIVE
+  DECEASED
+  TRANSFERRED
+  MISSING
+}
+
+enum ResourceCategory {
+  FACILITY
+  EQUIPMENT
+  VEHICLE
+  WATER_SYSTEM
+  EVACUATION_CENTER
+  HEALTH
+  LAND
+  OTHER
+}
+
+enum Condition {
+  GOOD
+  FAIR
+  POOR
+  UNSERVICEABLE
+}
+
+enum ReportKind {
+  DEMOGRAPHICS
+  HOUSEHOLDS
+  CERTIFICATES
+  BLOTTER
+  COMMUNITY_RESOURCES
+  BARANGAY_PROFILE
+  OTHER
+}
+
+enum Frequency {
+  MONTHLY
+  QUARTERLY
+  SEMESTRAL
+  ANNUAL
+  ONE_TIME
+}
+
+enum SubmissionStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  RETURNED
+}
+
+enum AnnouncementScope {
+  SYSTEM // superadmin, everyone
+  MUNICIPAL // municipal office, all barangays of the municipality
+  BARANGAY // barangay secretary, own barangay
+}
+
+enum Priority {
+  URGENT
+  HIGH
+  NORMAL
+}
+
+enum PublishStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  RESTORE
+  ISSUE
+  VOID
+  SUBMIT
+  REVIEW
+  LOGIN
+  LOGOUT
+  LOGIN_FAILED
+  PASSWORD_CHANGE
+  PASSWORD_RESET
+  EXPORT
+}
+
+// ───────────────────────────── Geography (PSGC) ─────────────────────────────
+
+model Region {
+  code           String         @id @db.VarChar(10)
+  name           String
+  provinces      Province[]
+  municipalities Municipality[]
+}
+
+model Province {
+  code           String         @id @db.VarChar(10)
+  name           String
+  regionCode     String         @db.VarChar(10)
+  region         Region         @relation(fields: [regionCode], references: [code])
+  municipalities Municipality[]
+
+  @@index([regionCode])
+}
+
+/// City or municipality. `provinceCode` is null for NCR and province-free cities.
+model Municipality {
+  code         String    @id @db.VarChar(10)
+  name         String
+  isCity       Boolean   @default(false)
+  regionCode   String    @db.VarChar(10)
+  provinceCode String?   @db.VarChar(10)
+  region       Region    @relation(fields: [regionCode], references: [code])
+  province     Province? @relation(fields: [provinceCode], references: [code])
+  /// Onboarded into LGU Connect (has an IT admin). Set by the superadmin.
+  isActive     Boolean   @default(false)
+  address      String?
+  email        String?
+  phone        String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  barangays     Barangay[]
+  offices       MunicipalOffice[]
+  users         User[]
+  announcements Announcement[]
+  requirements  ReportRequirement[]
+
+  @@index([regionCode])
+  @@index([provinceCode])
+}
+
+/// The barangay and its profile (Barangay Profile pages).
+model Barangay {
+  code             String       @id @db.VarChar(10)
+  name             String
+  municipalityCode String       @db.VarChar(10)
+  municipality     Municipality @relation(fields: [municipalityCode], references: [code])
+  /// Onboarded into LGU Connect. Set by the municipal admin.
+  isActive         Boolean      @default(false)
+
+  classification      Classification @default(RURAL)
+  landAreaHectares    Decimal?       @db.Decimal(10, 2)
+  dateEstablished     DateTime?      @db.Date
+  zipCode             String?        @db.VarChar(8)
+  legislativeDistrict String?
+  history             String?
+  vision              String?
+  mission             String?
+  boundaryNorth       String?
+  boundaryEast        String?
+  boundarySouth       String?
+  boundaryWest        String?
+
+  address     String?
+  landline    String?
+  mobile      String?
+  email       String?
+  facebook    String?
+  /// [{ days: string, time: string }]
+  officeHours Json?
+  /// [{ name: string, number: string, note?: string }]
+  hotlines    Json?
+  logoUrl     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  puroks        Purok[]
+  officials     BarangayOfficial[]
+  bodies        BarangayBody[]
+  users         User[]
+  residents     Resident[]
+  households    Household[]
+  families      Family[]
+  documentTypes DocumentType[]
+  requests      DocumentRequest[]
+  issued        IssuedDocument[]
+  blotter       BlotterEntry[]
+  animals       Animal[]
+  resources     CommunityResource[]
+  submissions   Submission[]
+  announcements Announcement[]
+  counters      Counter[]
+
+  @@index([municipalityCode])
+}
+
+model Purok {
+  id           String         @id @default(cuid())
+  barangayCode String         @db.VarChar(10)
+  barangay     Barangay       @relation(fields: [barangayCode], references: [code], onDelete: Cascade)
+  name         String
+  sortOrder    Int            @default(0)
+  residents    Resident[]
+  households   Household[]
+  blotter      BlotterEntry[]
+
+  @@unique([barangayCode, name])
+}
+
+model BarangayOfficial {
+  id           String    @id @default(cuid())
+  barangayCode String    @db.VarChar(10)
+  barangay     Barangay  @relation(fields: [barangayCode], references: [code], onDelete: Cascade)
+  name         String
+  /// Punong Barangay, Barangay Kagawad, SK Chairperson, Barangay Secretary, Barangay Treasurer, ...
+  position     String
+  committee    String?
+  termStart    DateTime? @db.Date
+  termEnd      DateTime? @db.Date
+  contact      String?
+  email        String?
+  photoUrl     String?
+  sortOrder    Int       @default(0)
+  isActive     Boolean   @default(true)
+  /// The official who signs certificates (usually the Punong Barangay).
+  isSignatory  Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([barangayCode, isActive])
+}
+
+/// Lupon, BPOC, BADAC, BDRRMC, BCPC, VAW Desk, BHW, Tanod, ...
+model BarangayBody {
+  id           String   @id @default(cuid())
+  barangayCode String   @db.VarChar(10)
+  barangay     Barangay @relation(fields: [barangayCode], references: [code], onDelete: Cascade)
+  acronym      String
+  name         String
+  head         String?
+  memberCount  Int      @default(0)
+  isActive     Boolean  @default(true)
+  description  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([barangayCode, acronym])
+}
+
+model MunicipalOffice {
+  id               String              @id @default(cuid())
+  municipalityCode String              @db.VarChar(10)
+  municipality     Municipality        @relation(fields: [municipalityCode], references: [code], onDelete: Cascade)
+  name             String
+  acronym          String?
+  isActive         Boolean             @default(true)
+  users            User[]
+  requirements     ReportRequirement[]
+  submissions      Submission[]
+  announcements    Announcement[]
+
+  @@unique([municipalityCode, name])
+}
+
+// ───────────────────────────── Accounts ─────────────────────────────
+
+model User {
+  id           String        @id @default(cuid())
+  username     String        @unique
+  email        String?       @unique
+  /// scrypt: "scrypt$N$r$p$salt$hash"
+  passwordHash String
+  role         Role
+  status       AccountStatus @default(ACTIVE)
+  firstName    String
+  middleName   String?
+  lastName     String
+  suffix       String?
+  position     String?
+  phone        String?
+  avatarUrl    String?
+
+  /// Scope. Secretary: barangayCode (and its municipality). Municipal roles: municipalityCode. Superadmin: none.
+  barangayCode     String?          @db.VarChar(10)
+  barangay         Barangay?        @relation(fields: [barangayCode], references: [code])
+  municipalityCode String?          @db.VarChar(10)
+  municipality     Municipality?    @relation(fields: [municipalityCode], references: [code])
+  officeId         String?
+  office           MunicipalOffice? @relation(fields: [officeId], references: [id])
+
+  /// Extra grants on top of the role's defaults, e.g. "vawc:view".
+  permissions String[] @default([])
+  /// { email: boolean, submissions: boolean, requests: boolean, announcements: boolean }
+  preferences Json?
+
+  mustChangePassword Boolean   @default(false)
+  failedLogins       Int       @default(0)
+  lockedUntil        DateTime?
+  lastLoginAt        DateTime?
+  passwordChangedAt  DateTime?
+  createdById        String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  sessions          Session[]
+  notifications     Notification[]
+  auditLogs         AuditLog[]         @relation("actor")
+  announcementReads AnnouncementRead[]
+
+  @@index([role, municipalityCode])
+  @@index([barangayCode])
+}
+
+/// Server-side sessions. The cookie holds a random token; only its SHA-256 is stored here.
+model Session {
+  id         String   @id // sha256(token), hex
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime
+  lastSeenAt DateTime @default(now())
+  ip         String?
+  userAgent  String?
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+/// Per-barangay running numbers (resident no., household no., control no., blotter no., ...).
+model Counter {
+  barangayCode String   @db.VarChar(10)
+  barangay     Barangay @relation(fields: [barangayCode], references: [code], onDelete: Cascade)
+  key          String // e.g. "resident", "household", "request:2026", "doc:BC:2026", "blotter:2026"
+  value        Int      @default(0)
+
+  @@id([barangayCode, key])
+}
+
+// ───────────────────────────── Residents ─────────────────────────────
+
+model Household {
+  id             String       @id @default(cuid())
+  barangayCode   String       @db.VarChar(10)
+  barangay       Barangay     @relation(fields: [barangayCode], references: [code])
+  householdNo    String
+  purokId        String?
+  purok          Purok?       @relation(fields: [purokId], references: [id])
+  address        String // house no. and street
+  tenure         TenureStatus @default(OWNED)
+  waterSource    WaterSource  @default(LEVEL_III)
+  toilet         ToiletType   @default(WATER_SEALED)
+  hasElectricity Boolean      @default(true)
+  monthlyIncome  Decimal?     @db.Decimal(12, 2)
+  remarks        String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  deletedAt      DateTime?
+
+  members  Resident[]
+  families Family[]
+  animals  Animal[]
+
+  @@unique([barangayCode, householdNo])
+  @@index([barangayCode, deletedAt])
+}
+
+/// A family unit inside a household (a household can hold more than one family).
+model Family {
+  id           String     @id @default(cuid())
+  barangayCode String     @db.VarChar(10)
+  barangay     Barangay   @relation(fields: [barangayCode], references: [code])
+  householdId  String
+  household    Household  @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  name         String // e.g. "Dela Cruz family"
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  members      Resident[]
+
+  @@index([householdId])
+}
+
+model Resident {
+  id           String   @id @default(cuid())
+  barangayCode String   @db.VarChar(10)
+  barangay     Barangay @relation(fields: [barangayCode], references: [code])
+  residentNo   String
+
+  firstName     String
+  middleName    String?
+  lastName      String
+  suffix        String?
+  sex           Sex
+  birthDate     DateTime    @db.Date
+  birthPlace    String?
+  civilStatus   CivilStatus @default(SINGLE)
+  citizenship   String      @default("Filipino")
+  religion      String?
+  occupation    String?
+  education     Education?
+  contactNumber String?
+  email         String?
+  philsysNo     String?
+
+  purokId       String?
+  purok         Purok?  @relation(fields: [purokId], references: [id])
+  address       String // house no. and street
+  residentSince Int? // year
+
+  householdId  String?
+  household    Household?    @relation(fields: [householdId], references: [id], onDelete: SetNull)
+  familyId     String?
+  family       Family?       @relation(fields: [familyId], references: [id], onDelete: SetNull)
+  relationship Relationship?
+
+  // Classification (Resident Classification page)
+  isRegisteredVoter  Boolean @default(false)
+  voterPrecinct      String?
+  isPwd              Boolean @default(false)
+  disability         String?
+  isSoloParent       Boolean @default(false)
+  is4Ps              Boolean @default(false)
+  isIndigenous       Boolean @default(false)
+  isOfw              Boolean @default(false)
+  isOutOfSchoolYouth Boolean @default(false)
+  // Senior citizen is derived from birthDate (60+). OSCA ID kept here.
+  seniorIdNo         String?
+
+  status      ResidentStatus @default(ACTIVE)
+  remarks     String?
+  createdById String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  deletedAt   DateTime?
+
+  requests       DocumentRequest[]
+  issued         IssuedDocument[]
+  blotterParties BlotterParty[]
+  animals        Animal[]
+
+  @@unique([barangayCode, residentNo])
+  @@index([barangayCode, deletedAt, status])
+  @@index([barangayCode, lastName, firstName])
+  @@index([householdId])
+}
+
+// ───────────────────────────── Documents ─────────────────────────────
+
+/// Document types and their fee/validity/requirements, per barangay (seeded from defaults on onboarding).
+model DocumentType {
+  id             String           @id @default(cuid())
+  barangayCode   String           @db.VarChar(10)
+  barangay       Barangay         @relation(fields: [barangayCode], references: [code], onDelete: Cascade)
+  /// Stable key: clearance, indigency, residency, good-moral, business-clearance, barangay-id, jobseeker, permit
+  key            String
+  name           String
+  shortName      String
+  category       DocumentCategory @default(CERTIFICATE)
+  description    String
+  requirements   String[]         @default([])
+  fee            Decimal          @default(0) @db.Decimal(10, 2)
+  validityMonths Int?
+  /// Control number prefix, e.g. "BC" gives BC-2026-0001.
+  prefix         String           @db.VarChar(6)
+  /// Optional custom wording; {name}, {age}, {address}, {purpose} ... are filled in.
+  bodyTemplate   String?
+  isActive       Boolean          @default(true)
+  sortOrder      Int              @default(0)
+  updatedAt      DateTime         @updatedAt
+
+  requests DocumentRequest[]
+  issued   IssuedDocument[]
+
+  @@unique([barangayCode, key])
+}
+
+model DocumentRequest {
+  id              String          @id @default(cuid())
+  barangayCode    String          @db.VarChar(10)
+  barangay        Barangay        @relation(fields: [barangayCode], references: [code])
+  requestNo       String
+  residentId      String
+  resident        Resident        @relation(fields: [residentId], references: [id])
+  documentTypeId  String
+  documentType    DocumentType    @relation(fields: [documentTypeId], references: [id])
+  purpose         String
+  channel         RequestChannel  @default(WALK_IN)
+  status          RequestStatus   @default(PENDING)
+  remarks         String?
+  rejectionReason String?
+  requestedAt     DateTime        @default(now())
+  processedById   String?
+  releasedAt      DateTime?
+  updatedAt       DateTime        @updatedAt
+  issued          IssuedDocument?
+
+  @@unique([barangayCode, requestNo])
+  @@index([barangayCode, status])
+}
+
+model IssuedDocument {
+  id                String           @id @default(cuid())
+  barangayCode      String           @db.VarChar(10)
+  barangay          Barangay         @relation(fields: [barangayCode], references: [code])
+  controlNo         String
+  documentTypeId    String
+  documentType      DocumentType     @relation(fields: [documentTypeId], references: [id])
+  residentId        String
+  resident          Resident         @relation(fields: [residentId], references: [id])
+  requestId         String?          @unique
+  request           DocumentRequest? @relation(fields: [requestId], references: [id])
+  purpose           String
+  fee               Decimal          @default(0) @db.Decimal(10, 2)
+  orNumber          String?
+  issuedAt          DateTime         @default(now())
+  /// Null = no expiry. "Expired" is derived from this date, never stored.
+  validUntil        DateTime?
+  /// Copied at issue time so a reprint matches the original even if records change later.
+  snapshot          Json
+  signatoryName     String
+  signatoryPosition String
+  issuedById        String
+  status            IssuedStatus     @default(VALID)
+  voidReason        String?
+  voidedAt          DateTime?
+  voidedById        String?
+  printCount        Int              @default(0)
+
+  @@unique([barangayCode, controlNo])
+  @@index([barangayCode, issuedAt])
+  @@index([residentId])
+}
+
+// ───────────────────────────── Blotter, complaints, KP, VAWC ─────────────────────────────
+
+model BlotterEntry {
+  id           String        @id @default(cuid())
+  barangayCode String        @db.VarChar(10)
+  barangay     Barangay      @relation(fields: [barangayCode], references: [code])
+  blotterNo    String
+  kind         BlotterKind   @default(INCIDENT)
+  /// Theft, Physical injury, Noise, Property damage, Unpaid debt, Trespassing, ...
+  category     String
+  title        String
+  narrative    String
+  incidentAt   DateTime
+  location     String
+  purokId      String?
+  purok        Purok?        @relation(fields: [purokId], references: [id])
+  status       BlotterStatus @default(OPEN)
+  actionTaken  String?
+  resolution   String?
+  resolvedAt   DateTime?
+
+  /// Katarungang Pambarangay case. Null = plain blotter entry (not a KP case).
+  kpStage    KpStage?
+  kpCaseNo   String?
+  kpFiledAt  DateTime?
+  /// 15 days for mediation, 15 (+15) for conciliation.
+  kpDeadline DateTime?
+
+  /// VAWC (RA 9262) entries are only visible with the "vawc:view" permission.
+  isVawc       Boolean   @default(false)
+  recordedById String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  parties  BlotterParty[]
+  hearings CaseHearing[]
+
+  @@unique([barangayCode, blotterNo])
+  @@index([barangayCode, kind, status])
+  @@index([barangayCode, isVawc])
+}
+
+model BlotterParty {
+  id         String       @id @default(cuid())
+  entryId    String
+  entry      BlotterEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  role       PartyRole
+  residentId String?
+  resident   Resident?    @relation(fields: [residentId], references: [id], onDelete: SetNull)
+  name       String
+  address    String?
+  contact    String?
+  age        Int?
+  sex        Sex?
+  statement  String?
+
+  @@index([entryId])
+}
+
+model CaseHearing {
+  id          String         @id @default(cuid())
+  entryId     String
+  entry       BlotterEntry   @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  stage       KpStage
+  scheduledAt DateTime
+  outcome     HearingOutcome @default(SCHEDULED)
+  notes       String?
+  createdAt   DateTime       @default(now())
+
+  @@index([entryId])
+}
+
+// ───────────────────────────── Community resources ─────────────────────────────
+
+model Animal {
+  id               String       @id @default(cuid())
+  barangayCode     String       @db.VarChar(10)
+  barangay         Barangay     @relation(fields: [barangayCode], references: [code])
+  tagNo            String
+  species          Species
+  name             String?
+  breed            String?
+  sex              Sex?
+  color            String?
+  birthYear        Int?
+  ownerResidentId  String?
+  owner            Resident?    @relation(fields: [ownerResidentId], references: [id], onDelete: SetNull)
+  ownerName        String
+  householdId      String?
+  household        Household?   @relation(fields: [householdId], references: [id], onDelete: SetNull)
+  lastVaccinatedAt DateTime?    @db.Date
+  vaccine          String?
+  status           AnimalStatus @default(ACTIVE)
+  remarks          String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  deletedAt        DateTime?
+
+  @@unique([barangayCode, tagNo])
+  @@index([barangayCode, species])
+}
+
+model CommunityResource {
+  id           String           @id @default(cuid())
+  barangayCode String           @db.VarChar(10)
+  barangay     Barangay         @relation(fields: [barangayCode], references: [code])
+  name         String
+  category     ResourceCategory
+  quantity     Int              @default(1)
+  unit         String           @default("unit")
+  condition    Condition        @default(GOOD)
+  location     String?
+  custodian    String?
+  acquiredAt   DateTime?        @db.Date
+  value        Decimal?         @db.Decimal(14, 2)
+  remarks      String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  deletedAt    DateTime?
+
+  @@index([barangayCode, category])
+}
+
+// ───────────────────────────── Reports and submissions ─────────────────────────────
+
+/// What the municipality asks barangays to submit, and by when (created by municipal personnel).
+model ReportRequirement {
+  id               String          @id @default(cuid())
+  municipalityCode String          @db.VarChar(10)
+  municipality     Municipality    @relation(fields: [municipalityCode], references: [code])
+  officeId         String
+  office           MunicipalOffice @relation(fields: [officeId], references: [id])
+  title            String
+  description      String?
+  kind             ReportKind
+  frequency        Frequency
+  periodStart      DateTime        @db.Date
+  periodEnd        DateTime        @db.Date
+  dueAt            DateTime
+  isActive         Boolean         @default(true)
+  createdById      String?
+  createdAt        DateTime        @default(now())
+  submissions      Submission[]
+
+  @@index([municipalityCode, dueAt])
+}
+
+model Submission {
+  id            String             @id @default(cuid())
+  barangayCode  String             @db.VarChar(10)
+  barangay      Barangay           @relation(fields: [barangayCode], references: [code])
+  requirementId String?
+  requirement   ReportRequirement? @relation(fields: [requirementId], references: [id])
+  officeId      String
+  office        MunicipalOffice    @relation(fields: [officeId], references: [id])
+  kind          ReportKind
+  title         String
+  periodStart   DateTime           @db.Date
+  periodEnd     DateTime           @db.Date
+  /// Figures generated by the system at submit time, so the municipality sees what the barangay saw.
+  data          Json
+  notes         String?
+  status        SubmissionStatus   @default(SUBMITTED)
+  version       Int                @default(1)
+  submittedAt   DateTime?
+  submittedById String?
+  reviewedAt    DateTime?
+  reviewedById  String?
+  remarks       String?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  @@index([barangayCode, status])
+  @@index([requirementId])
+}
+
+// ───────────────────────────── Communication ─────────────────────────────
+
+model Announcement {
+  id               String             @id @default(cuid())
+  scope            AnnouncementScope
+  municipalityCode String?            @db.VarChar(10)
+  municipality     Municipality?      @relation(fields: [municipalityCode], references: [code])
+  barangayCode     String?            @db.VarChar(10)
+  barangay         Barangay?          @relation(fields: [barangayCode], references: [code])
+  officeId         String?
+  office           MunicipalOffice?   @relation(fields: [officeId], references: [id])
+  title            String
+  body             String
+  priority         Priority           @default(NORMAL)
+  /// Shown on the Important Advisories page.
+  isAdvisory       Boolean            @default(false)
+  isPinned         Boolean            @default(false)
+  status           PublishStatus      @default(PUBLISHED)
+  publishedAt      DateTime           @default(now())
+  expiresAt        DateTime?
+  authorId         String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  reads            AnnouncementRead[]
+
+  @@index([scope, municipalityCode, status])
+  @@index([barangayCode])
+}
+
+model AnnouncementRead {
+  announcementId String
+  announcement   Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  readAt         DateTime     @default(now())
+
+  @@id([announcementId, userId])
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  body      String
+  href      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, readAt])
+}
+
+// ───────────────────────────── Audit and settings ─────────────────────────────
+
+/// Every record change and sign-in. Feeds Activity History and Record Update History.
+model AuditLog {
+  id               String      @id @default(cuid())
+  actorId          String?
+  actor            User?       @relation("actor", fields: [actorId], references: [id], onDelete: SetNull)
+  actorName        String
+  action           AuditAction
+  entityType       String // Resident, Household, IssuedDocument, ...
+  entityId         String?
+  summary          String
+  /// { field: [before, after] }
+  changes          Json?
+  barangayCode     String?     @db.VarChar(10)
+  municipalityCode String?     @db.VarChar(10)
+  ip               String?
+  createdAt        DateTime    @default(now())
+
+  @@index([barangayCode, createdAt])
+  @@index([municipalityCode, createdAt])
+  @@index([entityType, entityId])
+}
+
+/// Superadmin settings, e.g. password policy, session length, maintenance banner.
+model SystemSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}

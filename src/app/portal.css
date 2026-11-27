@@ -55,6 +55,8 @@ body {
   outline-color: var(--dp-color-on-field);
 }
 
+/* Component classes live in a layer so Tailwind utilities (w-full, px-2, …) can override them. */
+@layer components {
 .btn {
   display: inline-flex;
   align-items: center;
@@ -102,6 +104,7 @@ body {
   .btn:hover {
     transform: none;
   }
+}
 }
 
 /* Motion: all of it switches off under prefers-reduced-motion. */
@@ -198,6 +201,7 @@ body {
   background: color-mix(in srgb, var(--dp-color-accent) 45%, black);
 }
 
+@layer components {
 /* Gold button for use on blue fields. */
 .btn-gold {
   background: var(--dp-color-flag-gold);
@@ -206,6 +210,7 @@ body {
 .btn-gold:hover {
   background: color-mix(in srgb, var(--dp-color-flag-gold) 88%, black);
   box-shadow: 0 6px 16px rgb(252 209 22 / 0.3);
+}
 }
 
 /* Loading shimmer under a location field. */
@@ -258,4 +263,226 @@ body {
 }
 .dash :focus-visible {
   outline-color: var(--dash-primary);
+}
+
+/* ───────── Dashboard design layer ───────── */
+:root {
+  --dash-canvas: #f3f5fa;
+  --dash-danger: #b42318;
+  --dash-danger-soft: #fdecea;
+  --dash-shadow-sm: 0 1px 2px rgb(16 24 40 / 0.04), 0 1px 3px rgb(16 24 40 / 0.06);
+  --dash-shadow-md: 0 4px 12px rgb(16 24 40 / 0.06), 0 2px 4px rgb(16 24 40 / 0.04);
+  --dash-shadow-lg: 0 20px 48px rgb(16 24 40 / 0.14);
+}
+@theme inline {
+  --color-dash-canvas: var(--dash-canvas);
+  --color-dash-danger: var(--dash-danger);
+  --color-dash-danger-soft: var(--dash-danger-soft);
+  --shadow-card: var(--dash-shadow-sm);
+  --shadow-card-hover: var(--dash-shadow-md);
+  --shadow-pop: var(--dash-shadow-lg);
+}
+
+.dash {
+  background:
+    radial-gradient(1200px 400px at 100% -10%, rgb(0 56 168 / 0.05), transparent 70%),
+    var(--dash-canvas);
+}
+
+@layer components {
+/* Surfaces */
+.surface {
+  background: var(--dp-color-panel);
+  border: 1px solid color-mix(in srgb, var(--dp-color-rule) 80%, transparent);
+  border-radius: 18px;
+  box-shadow: var(--dash-shadow-sm);
+}
+
+/* Buttons: sizes and variants on top of .btn */
+.dash .btn {
+  min-height: 40px;
+  padding: 0 16px;
+  gap: 8px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+.dash .btn-sm {
+  min-height: 32px;
+  padding: 0 12px;
+  font-size: 13px;
+  border-radius: 8px;
+  gap: 6px;
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--dp-color-ink-secondary);
+}
+.btn-ghost:hover {
+  background: var(--dp-color-ground-muted);
+  color: var(--dp-color-ink);
+}
+.btn-danger {
+  background: var(--dash-danger);
+  color: #fff;
+}
+.btn-danger:hover {
+  background: color-mix(in srgb, var(--dash-danger) 86%, black);
+  box-shadow: 0 6px 16px rgb(180 35 24 / 0.25);
+}
+.btn-soft {
+  background: var(--dash-primary-soft);
+  color: var(--dash-primary);
+}
+.btn-soft:hover {
+  background: color-mix(in srgb, var(--dash-primary-soft) 80%, var(--dash-primary));
+}
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Form fields */
+.field {
+  display: block;
+  width: 100%;
+  min-height: 42px;
+  padding: 8px 12px;
+  border: 1px solid var(--dp-color-rule);
+  border-radius: 10px;
+  background: var(--dp-color-panel);
+  color: var(--dp-color-ink);
+  font-size: 14px;
+  line-height: 1.4;
+  transition:
+    border-color var(--dp-motion-interaction) var(--dp-motion-easing),
+    box-shadow var(--dp-motion-interaction) var(--dp-motion-easing);
+}
+.field::placeholder {
+  color: #8a91a0;
+}
+.field:hover {
+  border-color: #c3c8d2;
+}
+.field:focus {
+  outline: none;
+  border-color: var(--dash-primary);
+  box-shadow: 0 0 0 4px rgb(0 56 168 / 0.12);
+}
+.field[aria-invalid="true"] {
+  border-color: var(--dash-danger);
+  box-shadow: 0 0 0 4px rgb(180 35 24 / 0.08);
+}
+select.field {
+  appearance: none;
+  padding-right: 36px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23454c58' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+}
+textarea.field {
+  min-height: 96px;
+  resize: vertical;
+}
+.field:disabled,
+.field[readonly] {
+  background: var(--dp-color-ground-muted);
+  color: var(--dp-color-ink-secondary);
+}
+
+/* Data tables */
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 14px;
+  text-align: left;
+}
+.data-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f8f9fc;
+  color: var(--dp-color-ink-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--dp-color-rule);
+  white-space: nowrap;
+}
+.data-table tbody td {
+  padding: 12px 16px;
+  border-bottom: 1px solid color-mix(in srgb, var(--dp-color-rule) 70%, transparent);
+  vertical-align: middle;
+}
+.data-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.data-table tbody tr {
+  transition: background-color 120ms ease-out;
+}
+.data-table tbody tr:hover {
+  background: #f8faff;
+}
+}
+
+/* Native dialog used for confirmations and quick forms */
+dialog.modal {
+  margin: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 20px;
+  width: min(92vw, 520px);
+  box-shadow: var(--dash-shadow-lg);
+  color: var(--dp-color-ink);
+}
+dialog.modal::backdrop {
+  background: rgb(16 24 40 / 0.45);
+  backdrop-filter: blur(2px);
+}
+dialog.modal[open] {
+  animation: modal-in 160ms ease-out;
+}
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  dialog.modal[open] {
+    animation: none;
+  }
+}
+
+/* Printing: only the printable area shows. */
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
+  body {
+    background: #fff !important;
+  }
+  .dash {
+    background: #fff !important;
+  }
+  .no-print,
+  .dash aside,
+  .dash header.sticky,
+  .skip-link {
+    display: none !important;
+  }
+  .dash main {
+    padding: 0 !important;
+  }
+  .print-area {
+    box-shadow: none !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+  }
 }

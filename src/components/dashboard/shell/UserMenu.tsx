@@ -3,17 +3,17 @@ import Link from "next/link";
 import Icon from "@/components/dashboard/ui/Icon";
 import type { IconName } from "@/components/dashboard/ui/icon-paths";
 import Popover from "@/components/dashboard/ui/Popover";
-import { routes } from "@/config/navigation";
+import { WORKSPACES, type WorkspaceKey } from "@/config/workspaces";
 
-type Props = { name: string; position: string; onLogout: () => void };
+type Props = { ws: WorkspaceKey; name: string; position: string; onLogout: () => void };
 
-const links: { label: string; href: string; icon: IconName }[] = [
-  { label: "My Profile", href: routes.accountProfile, icon: "user" },
-  { label: "Account Settings", href: routes.accountSettings, icon: "settings" },
-  { label: "Change Password", href: routes.changePassword, icon: "key" },
-];
-
-export default function UserMenu({ name, position, onLogout }: Props) {
+export default function UserMenu({ ws, name, position, onLogout }: Props) {
+  const l = WORKSPACES[ws].links;
+  const links: { label: string; href: string; icon: IconName }[] = [
+    { label: "My Profile", href: l.account, icon: "user" },
+    { label: "Notification Settings", href: l.preferences, icon: "settings" },
+    { label: "Change Password", href: l.password, icon: "key" },
+  ];
   const initials = name
     .split(" ")
     .filter(Boolean)
@@ -33,7 +33,7 @@ export default function UserMenu({ name, position, onLogout }: Props) {
           >
             {initials}
           </span>
-          <span className="hidden text-left leading-tight md:block">
+          <span className="hidden whitespace-nowrap text-left leading-tight md:block">
             <span className="block text-[13px] font-semibold">{name}</span>
             <span className="block text-[12px] text-ink-secondary">
               {position}

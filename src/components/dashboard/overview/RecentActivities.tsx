@@ -1,33 +1,50 @@
-"use client";
 import Card from "@/components/dashboard/ui/Card";
-import DataTable, { type Column } from "@/components/dashboard/ui/DataTable";
-import StatusBadge from "@/components/dashboard/ui/StatusBadge";
+import EmptyState from "@/components/dashboard/ui/EmptyState";
+import Icon from "@/components/dashboard/ui/Icon";
+import type { IconName } from "@/components/dashboard/ui/icon-paths";
 import { routes } from "@/config/navigation";
 import { formatDateTime } from "@/lib/dashboard/format";
 import type { Activity } from "@/types/dashboard";
 
-const columns: Column<Activity>[] = [
-  { key: "activity", header: "Activity", cell: (r) => <span className="font-semibold">{r.activity}</span>, sortValue: (r) => r.activity },
-  { key: "description", header: "Description", cell: (r) => <span className="text-ink-secondary">{r.description}</span> },
-  { key: "by", header: "Performed By", cell: (r) => r.performedBy, sortValue: (r) => r.performedBy },
-  { key: "at", header: "Date and Time", cell: (r) => <span className="whitespace-nowrap">{formatDateTime(r.at)}</span>, sortValue: (r) => r.at },
-  { key: "status", header: "Status", cell: (r) => <StatusBadge status={r.status} />, sortValue: (r) => r.status },
-];
+const ICONS: Record<string, IconName> = {
+  Resident: "user",
+  Household: "home",
+  Family: "users",
+  IssuedDocument: "fileCheck",
+  DocumentRequest: "inbox",
+  BlotterEntry: "shield",
+  Submission: "send",
+  Announcement: "megaphone",
+  Animal: "paw",
+  CommunityResource: "box",
+  Barangay: "building",
+  BarangayOfficial: "user",
+  User: "key",
+};
 
-export default function RecentActivities({ rows }: { rows: Activity[] }) {
+/** A timeline of the latest changes in the barangay, from the audit log. */
+export default function RecentActivities({ rows, className = "" }: { rows: Activity[]; className?: string }) {
   return (
-    <Card title="Recent Activities" actionLabel="View All Activities" actionHref={routes.activities}>
-      <DataTable
-        caption="Recent activities"
-        rows={rows}
-        columns={columns}
-        rowKey={(r) => r.id}
-        searchText={(r) => `${r.activity} ${r.description} ${r.performedBy}`}
-        filter={{ label: "Status", options: ["Completed", "In Progress", "Pending", "Needs Attention"], pick: (r) => r.status }}
-        initialSort={{ key: "at", dir: "desc" }}
-        emptyTitle="No activities found"
-        emptyText="Nothing matches your search. Try a different word or clear the filter."
-      />
+    <Card title="Recent Activities" icon="history" actionLabel="View all" actionHref={routes.activities} className={className}>
+      {rows.length === 0 ? (
+        <EmptyState icon="history" title="No activity yet" text="Changes to records will appear here as they happen." />
+      ) : (
+        <ol className="relative space-y-4 before:absolute before:bottom-2 before:left-[17px] before:top-2 before:w-px before:bg-rule">
+          {rows.map((a) => (
+            <li key={a.id} className="relative flex gap-3">
+              <span className="relative z-[1] flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-rule bg-panel text-dash-primary">
+                <Icon name={ICONS[a.entity] ?? "check"} className="h-4 w-4" />
+              </span>
+              <div className="min-w-0 pt-0.5">
+                <p className="text-[14px] font-semibold leading-snug">{a.description}</p>
+                <p className="mt-0.5 text-[12.5px] text-ink-secondary">
+                  {a.performedBy} · {formatDateTime(a.at)}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      )}
     </Card>
   );
 }
