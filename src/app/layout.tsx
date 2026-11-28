@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Host_Grotesk, Instrument_Sans } from "next/font/google";
 import { MotionProvider } from "@/components/motion";
 import { brand } from "@/lib/brand";
-import { themeInitScript } from "@/lib/theme";
+import ThemeScript from "@/components/shared/ThemeScript";
 import "./globals.css";
 
 const display = Host_Grotesk({
@@ -28,7 +28,7 @@ export default function RootLayout({
     // The theme script sets the "dark" class before React loads, so the server and client markup differ there.
     <html lang="en" className={`${display.variable} ${body.variable}`} suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <ThemeScript />
       </head>
       <body>
         <MotionProvider>{children}</MotionProvider>

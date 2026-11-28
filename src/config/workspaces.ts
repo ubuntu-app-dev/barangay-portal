@@ -124,12 +124,3 @@ export function flattenWs(ws: Workspace): WsEntry[] {
     }
   return out;
 }
-
-/** The deepest menu page that contains this path (for detail pages like …/users/abc123). */
-export function findAncestorIn(ws: Workspace, pathname: string): { entry: WsEntry; rest: string[] } | null {
-  let best: WsEntry | null = null;
-  for (const e of flattenWs(ws))
-    if ((pathname === e.href || pathname.startsWith(`${e.href}/`)) && e.href !== ws.base && (!best || e.href.length > best.href.length)) best = e;
-  if (!best) return null;
-  return { entry: best, rest: pathname.slice(best.href.length).split("/").filter(Boolean) };
-}

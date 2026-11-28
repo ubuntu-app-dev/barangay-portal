@@ -4,7 +4,6 @@ import Icon from "@/components/dashboard/ui/Icon";
 import ThemeToggle from "@/components/shared/ThemeToggle";
 import { WORKSPACES, type WorkspaceKey } from "@/config/workspaces";
 import type { AppNotification } from "@/types/dashboard";
-import Breadcrumbs from "./Breadcrumbs";
 import GlobalSearch from "./GlobalSearch";
 import NotificationCenter from "./NotificationCenter";
 import UserMenu from "./UserMenu";
@@ -38,8 +37,7 @@ export default function Topbar({
       >
         <Icon name="menu" />
       </button>
-      <Breadcrumbs ws={ws} />
-      <div className="flex min-w-[220px] flex-1 justify-end sm:justify-center md:justify-end lg:justify-center">
+      <div className="flex min-w-[220px] flex-1 justify-start">
         <GlobalSearch ws={ws} permissions={permissions} />
       </div>
       <span className="hidden shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-dash-primary/15 bg-dash-primary-soft px-3 py-1 text-[12px] font-semibold text-dash-primary 2xl:inline-flex">
@@ -55,7 +53,10 @@ export default function Topbar({
           <Icon name="help" />
         </Link>
       )}
-      <ThemeToggle className="hidden sm:inline-flex" />
+      {/* On phones the theme switch lives in the account menu instead. */}
+      <span className="hidden sm:block">
+        <ThemeToggle />
+      </span>
       <NotificationCenter ws={ws} items={notifications} />
       <UserMenu ws={ws} name={user.name} position={user.position} onLogout={onLogout} />
     </header>

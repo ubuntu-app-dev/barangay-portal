@@ -654,6 +654,15 @@ dialog.modal[open] {
       color 250ms ease !important;
   }
 }
+/* Theme switch: the new theme is revealed as a growing circle (clip-path set in saveTheme). */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-new(root) {
+  z-index: 2;
+}
 /* Printing always uses the light palette. */
 @media print {
   .dark {

@@ -30,17 +30,47 @@ export function readTheme(): ThemeChoice {
   }
 }
 
-export function saveTheme(choice: ThemeChoice) {
+/**
+ * Saves the choice and applies it. With `origin` (the switch's center, in viewport pixels),
+ * the new theme is revealed as a circle growing from that point, using the View Transitions
+ * API where the browser has it; otherwise the colors cross-fade. No motion with reduced motion.
+ */
+export function saveTheme(choice: ThemeChoice, origin?: { x: number; y: number }) {
   try {
     if (choice === "system") localStorage.removeItem(THEME_KEY);
     else localStorage.setItem(THEME_KEY, choice);
   } catch {
     /* private mode: the choice still applies for this page */
   }
-  // Briefly animate colors so the switch feels smooth (see .theme-anim in portal.css).
   const root = document.documentElement;
-  root.classList.add("theme-anim");
+  const notify = () => window.dispatchEvent(new Event(THEME_EVENT));
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const doc = document as Document & {
+    startViewTransition?: (update: () => void) => { ready: Promise<void> };
+  };
+
+  if (origin && !reduce && doc.startViewTransition) {
+    const { x, y } = origin;
+    // Radius that reaches the farthest corner of the screen.
+    const r = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+    const t = doc.startViewTransition(() => {
+      applyTheme(choice);
+      notify();
+    });
+    t.ready
+      .then(() => {
+        root.animate(
+          { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${r}px at ${x}px ${y}px)`] },
+          { duration: 650, easing: "cubic-bezier(0.4, 0, 0.2, 1)", pseudoElement: "::view-transition-new(root)" },
+        );
+      })
+      .catch(() => {});
+    return;
+  }
+
+  // Fallback: briefly animate colors (see .theme-anim in portal.css).
+  if (!reduce) root.classList.add("theme-anim");
   applyTheme(choice);
   window.setTimeout(() => root.classList.remove("theme-anim"), 300);
-  window.dispatchEvent(new Event(THEME_EVENT));
+  notify();
 }

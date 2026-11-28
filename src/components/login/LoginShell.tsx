@@ -49,7 +49,7 @@ export default function LoginShell({
             <div className="flex items-center justify-between gap-4">
               <Brand onDark />
               <div className="flex items-center gap-3">
-              <ThemeToggle onDark />
+              <ThemeToggle />
               <Link
                 href={ROUTES.home}
                 className="text-[14px] text-on-field-secondary hover:text-on-field hover:underline"
