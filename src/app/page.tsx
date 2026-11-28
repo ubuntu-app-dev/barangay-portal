@@ -1,12 +1,11 @@
 import {
-  CallToAction,
-  DataPrivacy,
+  About,
+  Contact,
+  Features,
   Gallery,
   Hero,
-  StatsStrip,
-  SystemsOverview,
-  UserLevels,
-  Workflow,
+  HowItWorks,
+  Security,
 } from "@/components/landing";
 import { Footer, Header } from "@/components/layout";
 
@@ -16,13 +15,12 @@ export default function Home() {
       <Header />
       <main id="main">
         <Hero />
-        <StatsStrip />
-        <SystemsOverview />
-        <UserLevels />
+        <About />
+        <Features />
         <Gallery />
-        <Workflow />
-        <DataPrivacy />
-        <CallToAction />
+        <HowItWorks />
+        <Security />
+        <Contact />
       </main>
       <Footer />
     </>

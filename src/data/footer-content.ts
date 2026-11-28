@@ -2,22 +2,23 @@ import { ROUTES, SECTIONS } from "@/lib/routes";
 
 export const footerContent = {
   blurb:
-    "One centralized platform connecting the Barangay Information System and the Municipal System.",
+    "A centralized platform connecting municipal offices and barangay administrations.",
   groups: [
     {
       title: "Platform",
       links: [
-        { label: "Systems", href: SECTIONS.systems },
-        { label: "Gallery", href: SECTIONS.gallery },
-        { label: "How it works", href: SECTIONS.how },
-        { label: "Data privacy", href: SECTIONS.privacy },
+        { label: "About the System", href: SECTIONS.about },
+        { label: "Features", href: SECTIONS.features },
+        { label: "Explore the Platform", href: SECTIONS.explore },
+        { label: "How It Works", href: SECTIONS.how },
+        { label: "Security", href: SECTIONS.security },
       ],
     },
     {
-      title: "Access",
+      title: "Portal",
       links: [
-        { label: "User levels", href: SECTIONS.levels },
-        { label: "Sign in", href: ROUTES.login },
+        { label: "Login to Portal", href: ROUTES.login },
+        { label: "Contact", href: SECTIONS.contact },
       ],
     },
   ],

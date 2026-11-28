@@ -1,23 +1,12 @@
 "use client";
-import { useState, type ComponentType } from "react";
+import { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import {
-  MunicipalRoleIcon,
-  SecretaryRoleIcon,
-  SuperadminRoleIcon,
-} from "@/components/icons/icon";
-import { workflowSteps } from "@/data/workflow-content";
-import type { LevelId } from "@/types/levels";
-
-const icons: Record<LevelId, ComponentType<{ className?: string }>> = {
-  secretary: SecretaryRoleIcon,
-  municipal: MunicipalRoleIcon,
-  superadmin: SuperadminRoleIcon,
-};
+import { steps as workflowSteps } from "@/data/landing-content";
+import { LandingIcon } from "../icons";
 
 /**
  * Each step lights up as it scrolls into view, and a gold line draws to the next step.
- * Horizontal on desktop, vertical on phones. With reduced motion, everything is shown complete.
+ * Horizontal on wide screens, vertical on phones. With reduced motion, everything is shown complete.
  */
 export default function WorkflowTimeline() {
   const reduce = useReducedMotion();
@@ -31,15 +20,14 @@ export default function WorkflowTimeline() {
   } as const;
 
   return (
-    <ol className="mt-14 grid gap-8 md:grid-cols-3 md:gap-0">
+    <ol className="mt-14 grid gap-8 lg:grid-cols-4 lg:gap-0">
       {workflowSteps.map((s, i) => {
-        const Icon = icons[s.id];
         const on = i < reached;
         const linked = i + 1 < reached;
         return (
           <motion.li
-            key={s.id}
-            className="relative pl-[76px] md:px-5 md:pl-5"
+            key={s.title}
+            className="relative pl-[76px] lg:flex lg:flex-col lg:px-3 lg:pl-3"
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "0px 0px -30% 0px" }}
@@ -50,30 +38,30 @@ export default function WorkflowTimeline() {
               <>
                 <span
                   aria-hidden="true"
-                  className="absolute left-[27px] top-7 h-[calc(100%+2rem)] w-0.5 bg-on-field-secondary/25 md:hidden"
+                  className="absolute left-[27px] top-7 h-[calc(100%+2rem)] w-0.5 bg-on-field-secondary/25 lg:hidden"
                 />
                 <motion.span
                   aria-hidden="true"
                   initial={false}
                   animate={{ scaleY: linked ? 1 : 0 }}
                   transition={draw}
-                  className="absolute left-[27px] top-7 h-[calc(100%+2rem)] w-0.5 origin-top bg-flag-gold md:hidden"
+                  className="absolute left-[27px] top-7 h-[calc(100%+2rem)] w-0.5 origin-top bg-flag-gold lg:hidden"
                 />
                 <span
                   aria-hidden="true"
-                  className="absolute left-1/2 top-[27px] hidden h-0.5 w-full bg-on-field-secondary/25 md:block"
+                  className="absolute left-1/2 top-[27px] hidden h-0.5 w-full bg-on-field-secondary/25 lg:block"
                 />
                 <motion.span
                   aria-hidden="true"
                   initial={false}
                   animate={{ scaleX: linked ? 1 : 0 }}
                   transition={draw}
-                  className="absolute left-1/2 top-[27px] hidden h-0.5 w-full origin-left bg-flag-gold md:block"
+                  className="absolute left-1/2 top-[27px] hidden h-0.5 w-full origin-left bg-flag-gold lg:block"
                 />
               </>
             )}
 
-            <span className="absolute left-0 top-0 z-10 h-14 w-14 md:relative md:mx-auto">
+            <span className="absolute left-0 top-0 z-10 h-14 w-14 lg:relative lg:mx-auto">
               {on && !reduce && (
                 <motion.span
                   aria-hidden="true"
@@ -92,22 +80,22 @@ export default function WorkflowTimeline() {
                     : "border-on-field-secondary/40 bg-black/30 text-on-field"
                 }`}
               >
-                <Icon className="h-7 w-7" />
+                <LandingIcon name={s.icon} className="h-6 w-6" />
               </motion.span>
             </span>
 
-            <div className="rounded-panel border border-on-field-secondary/20 bg-white/10 p-5 text-left backdrop-blur-sm md:mt-5 md:text-center">
+            <div className="rounded-panel border border-on-field-secondary/20 bg-white/10 p-5 text-left backdrop-blur-sm lg:mt-5 lg:flex-1 lg:text-center">
               <p className="text-[13px] font-semibold text-flag-gold">
-                Step {i + 1} &middot; {s.actor}
+                Step {i + 1}
               </p>
               <h3 className="mt-1 font-display text-xl font-bold tracking-[-0.02em]">
                 {s.title}
               </h3>
-              <p className="mt-2 text-[15px] text-on-field-secondary">
-                {s.text}
+              <p className="mt-1 text-[13px] font-medium text-on-field">
+                {s.actor}
               </p>
-              <p className="mt-4 inline-flex rounded-full bg-white/15 px-3 py-1 text-[13px] font-medium">
-                {s.system}
+              <p className="mt-3 text-[15px] text-on-field-secondary">
+                {s.text}
               </p>
             </div>
           </motion.li>

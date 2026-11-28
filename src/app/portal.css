@@ -174,20 +174,114 @@ body {
   top: 1rem;
 }
 
-/*
- * Hero map size. The liquid-glass renderer sizes its plate as the smallest of: logoSize,
- * canvas width / 1.9, canvas height / 1.5. In a narrow column the width limit wins, so a bigger
- * logoSize does nothing. A canvas wider than its box (the box clips the overflow) gives the plate
- * that room. To enlarge the map further, widen it and shift left by half the extra,
- * e.g. width: 180%; left: -40%.
- */
-.liquid-glass-logo.hero-map > canvas {
-  left: -30%;
-  right: auto;
-  width: 160%;
+/* Hero illustration: the floating cards drift gently. */
+.float-slow {
+  animation: float-y 6s ease-in-out infinite;
+}
+.float-slower {
+  animation: float-y 7.5s ease-in-out infinite reverse;
+}
+@keyframes float-y {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .float-slow,
+  .float-slower {
+    animation: none;
+  }
 }
 
-/* Deep flag-blue field used by the Workflow and Call-to-action sections. Swap this one rule to restyle them. */
+/* Waving flag: each vertical strip rises, falls, and comes forward a little later than the one before. */
+.flag-wave {
+  transform-style: preserve-3d;
+  perspective: 500px;
+}
+.flag-strip {
+  animation: flag-wave 2.6s ease-in-out infinite;
+  will-change: transform;
+}
+@keyframes flag-wave {
+  0%,
+  100% {
+    transform: translateY(calc(var(--flag-amp) * var(--strip-k) * -1)) translateZ(0);
+    filter: brightness(1.08);
+  }
+  50% {
+    transform: translateY(calc(var(--flag-amp) * var(--strip-k))) translateZ(calc(var(--flag-amp) * var(--strip-k) * 2));
+    filter: brightness(0.88);
+  }
+}
+
+/* Hero chart bars grow from the baseline. */
+.bar-grow {
+  transform-origin: bottom;
+  animation: bar-grow 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes bar-grow {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+/* The Philippines map behind the hero drifts slowly. */
+.map-drift {
+  animation: map-drift 14s ease-in-out infinite;
+}
+@keyframes map-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(-10px, 12px, 0) rotate(-2deg);
+  }
+}
+
+/* Security badge: rings ripple outward. */
+.shield-ripple {
+  animation: shield-ripple 3.3s ease-out infinite;
+}
+@keyframes shield-ripple {
+  from {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
+
+/* Carousel: the active dot fills while the slide is shown. */
+.carousel-progress {
+  animation: carousel-progress linear both;
+}
+@keyframes carousel-progress {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flag-strip,
+  .bar-grow,
+  .map-drift,
+  .shield-ripple,
+  .carousel-progress {
+    animation: none;
+  }
+}
+
+/* Deep flag-blue field used by How It Works and the contact call to action. Swap this one rule to restyle them. */
 .brand-field {
   background: linear-gradient(
     160deg,

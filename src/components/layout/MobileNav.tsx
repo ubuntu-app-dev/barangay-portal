@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useId, useState } from "react";
 import { CloseIcon, MenuIcon } from "@/components/icons/icon";
+import { ROUTES } from "@/lib/routes";
 import type { NavLink } from "@/types/landing";
 
 export default function MobileNav({ links }: { links: NavLink[] }) {
@@ -17,7 +18,7 @@ export default function MobileNav({ links }: { links: NavLink[] }) {
   }, [open]);
 
   return (
-    <div className="md:hidden">
+    <div className="lg:hidden">
       <button
         type="button"
         aria-expanded={open}
@@ -47,6 +48,9 @@ export default function MobileNav({ links }: { links: NavLink[] }) {
               </li>
             ))}
           </ul>
+          <a href={ROUTES.login} className="btn btn-primary mb-3 mt-2 w-full">
+            Login to Portal
+          </a>
         </nav>
       )}
     </div>

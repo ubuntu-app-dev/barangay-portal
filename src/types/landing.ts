@@ -1,35 +1,36 @@
 export type NavLink = { label: string; href: string };
 
-export type Role = {
-  level: string;
-  tier: string;
-  name: string;
-  scope: string;
-  text: string;
-  tasks: string[];
-};
+export type IconName =
+  | "network"
+  | "folders"
+  | "zap"
+  | "records"
+  | "municipal"
+  | "megaphone"
+  | "shield"
+  | "setup"
+  | "secretary"
+  | "send"
+  | "review"
+  | "key";
 
-export type SystemInfo = {
-  id: string;
-  name: string;
+export type Principle = { title: string; text: string; icon: IconName };
+
+export type FeatureCategory = {
+  title: string;
   audience: string;
   text: string;
-  features: string[];
+  icon: IconName;
+  items: string[];
 };
 
-export type StatIconName =
-  | "barangay"
-  | "municipality"
-  | "residents"
-  | "documents"
-  | "reports"
-  | "users";
-
-export type Stat = {
-  id: string;
-  label: string;
-  value: number;
-  icon: StatIconName;
-  suffix?: string;
-  decimals?: number;
+export type Step = {
+  title: string;
+  actor: string;
+  text: string;
+  icon: IconName;
 };
+
+export type Screen = { title: string; src: string; alt: string; text: string };
+
+export type Highlight = { title: string; text: string; icon: IconName };

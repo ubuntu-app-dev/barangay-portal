@@ -2,11 +2,15 @@ export const ROUTES = {
   home: "/",
   login: "/login",
   dashboard: "/dashboard",
-} as const; // point login at your sign-in route
+} as const;
+
+/** Section anchors on the landing page. Each id must match a section's `id`. */
 export const SECTIONS = {
-  systems: "#systems",
-  gallery: "#gallery",
-  levels: "#levels",
+  home: "#home",
+  about: "#about",
+  features: "#features",
+  explore: "#explore",
   how: "#how",
-  privacy: "#privacy",
+  security: "#security",
+  contact: "#contact",
 } as const;

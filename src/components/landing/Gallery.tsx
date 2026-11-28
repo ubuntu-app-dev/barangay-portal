@@ -1,42 +1,26 @@
-import { FanGallery } from "@/components/fan-gallery"; // installed by: npx shadcn@latest add https://reactdrops.dev/r/fan-gallery.json
 import { Reveal } from "@/components/motion";
+import { gallery, screens } from "@/data/landing-content";
 import { container, heading2 } from "@/lib/styles";
-import {
-  galleryHeading,
-  galleryIsIllustrative,
-  galleryItems,
-} from "@/data/gallery-content";
+import ScreenCarousel from "./gallery/ScreenCarousel";
+import { Eyebrow } from "./icons";
 
 export default function Gallery() {
   return (
-    <section
-      id="gallery"
-      className="scroll-mt-16 overflow-x-clip py-16 md:py-20"
-    >
-      <div className={container}>
-        <Reveal>
-          <h2 className={`${heading2} max-w-[22ch]`}>{galleryHeading.title}</h2>
-          <p className="mt-4 max-w-[62ch] text-ink-secondary">
-            {galleryHeading.text}
-          </p>
+    <section id="explore" className="relative scroll-mt-20 overflow-x-clip py-20 md:py-24">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-1/3 h-[60%] bg-[radial-gradient(ellipse_at_center,rgb(0_56_168/0.10),transparent_65%)]"
+      />
+      <div className={`${container} relative`}>
+        <Reveal className="mx-auto max-w-[44rem] text-center">
+          <Eyebrow>{gallery.eyebrow}</Eyebrow>
+          <h2 className={`${heading2} mt-3`}>{gallery.title}</h2>
+          <p className="mt-4 text-ink-secondary">{gallery.text}</p>
+        </Reveal>
+        <Reveal delay={0.1} className="mt-10">
+          <ScreenCarousel screens={screens} />
         </Reveal>
       </div>
-      <div className="mt-6">
-        <FanGallery
-          items={galleryItems}
-          entrance="stack"
-          cardWidth={230}
-          radius={14}
-          ariaLabel="Gallery of platform screens"
-        />
-      </div>
-      {galleryIsIllustrative && (
-        <p
-          className={`${container} mt-2 text-center text-[13px] text-ink-secondary`}
-        >
-          {galleryHeading.note}
-        </p>
-      )}
     </section>
   );
 }
