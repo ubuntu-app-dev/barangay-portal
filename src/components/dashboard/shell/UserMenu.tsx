@@ -3,6 +3,7 @@ import Link from "next/link";
 import Icon from "@/components/dashboard/ui/Icon";
 import type { IconName } from "@/components/dashboard/ui/icon-paths";
 import Popover from "@/components/dashboard/ui/Popover";
+import InstallAppButton from "@/components/shared/InstallAppButton";
 import ThemeToggle from "@/components/shared/ThemeToggle";
 import { WORKSPACES, type WorkspaceKey } from "@/config/workspaces";
 
@@ -64,6 +65,9 @@ export default function UserMenu({ ws, name, position, onLogout }: Props) {
                 </Link>
               </li>
             ))}
+            <li>
+              <InstallAppButton variant="menu" onOpen={close} />
+            </li>
           </ul>
           <div className="mt-1 flex items-center justify-between gap-3 border-t border-rule px-3 py-2">
             <span className="text-[14px]">Theme</span>

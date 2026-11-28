@@ -58,6 +58,15 @@ All text is in `data/landing-content.ts`. The "Explore the Platform" carousel sh
 
 The theme is a `dark` class on `<html>`, set before the page paints by `components/shared/ThemeScript.tsx` and changed with `ThemeToggle`. Only CSS tokens change (`app/portal.css`, `.dark { ... }`). Blue fills that carry white text use `bg-brand-fill`; the large blue bands use `flag-blue`; certificates and printing stay light.
 
+## Installable app (PWA)
+
+Staff can install LGU Connect on phones and computers; it then opens in its own window from a home-screen or desktop icon.
+
+- `app/manifest.ts` is the web app manifest. The app starts at `/app` (`app/app/route.ts`), which sends signed-in users to their workspace and everyone else to `/login`.
+- Icons are in `public/pwa/`. After changing `public/brand/lgu-icon.svg`, run `node scripts/generate-pwa-icons.mjs`.
+- `public/sw.js` is the service worker, registered in production by `components/shared/PwaSetup.tsx`. For privacy (RA 10173) it never stores pages or API responses, only the offline page, the icons, and hashed `/_next/static/` build files. Without internet, a page load shows `public/offline.html`, which reloads when the connection returns. Bump `VERSION` in `sw.js` when it or `offline.html` changes.
+- "Install app" appears in the account menu and the landing page's phone menu when the browser can install (`lib/pwa.ts` keeps the `beforeinstallprompt` event). On iPhone and iPad, it shows the Share → Add to Home Screen steps (`IosInstallDialog`). On desktop Chrome and Edge, the address bar's install icon also works.
+
 ## Login page (`/login`)
 
 Pick a role, then narrow the location before the credentials appear: Barangay Secretary = region, province, city or municipality, barangay; Municipal Personnel = region, province, city or municipality; Superadmin = credentials only. Regions without provinces (NCR) skip the province step.

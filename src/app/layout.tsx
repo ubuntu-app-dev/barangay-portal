@@ -1,8 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Host_Grotesk, Instrument_Sans } from "next/font/google";
 import { MotionProvider } from "@/components/motion";
 import { brand } from "@/lib/brand";
 import ThemeScript from "@/components/shared/ThemeScript";
+import PwaSetup from "@/components/shared/PwaSetup";
 import "./globals.css";
 
 const display = Host_Grotesk({
@@ -19,6 +20,16 @@ const body = Instrument_Sans({
 export const metadata: Metadata = {
   title: `${brand.name} | Barangay and Municipal LGU System`,
   description: `${brand.tagline} A centralized platform for barangay secretaries, municipal personnel, and Superadmins.`,
+  applicationName: brand.name,
+  // Installed on iPhone/iPad from Safari's "Add to Home Screen" (the manifest covers other platforms).
+  appleWebApp: { capable: true, title: brand.name, statusBarStyle: "default" },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b1120" },
+  ],
 };
 
 export default function RootLayout({
@@ -32,6 +43,7 @@ export default function RootLayout({
       </head>
       <body>
         <MotionProvider>{children}</MotionProvider>
+        <PwaSetup />
       </body>
     </html>
   );

@@ -2,6 +2,7 @@
 import { useEffect, useId, useState } from "react";
 import { CloseIcon, MenuIcon } from "@/components/icons/icon";
 import { ROUTES } from "@/lib/routes";
+import InstallAppButton from "@/components/shared/InstallAppButton";
 import type { NavLink } from "@/types/landing";
 
 export default function MobileNav({ links }: { links: NavLink[] }) {
@@ -51,6 +52,7 @@ export default function MobileNav({ links }: { links: NavLink[] }) {
           <a href={ROUTES.login} className="btn btn-primary mb-3 mt-2 w-full">
             Login to Portal
           </a>
+          <InstallAppButton variant="wide" onOpen={() => setOpen(false)} />
         </nav>
       )}
     </div>
