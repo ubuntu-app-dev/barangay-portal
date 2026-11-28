@@ -17,7 +17,7 @@ function ShieldBadge() {
       ))}
       <span className="absolute inset-14 rounded-full bg-brand/10 blur-xl" />
       <Tilt max={14} rest={{ x: 8, y: -12 }} className="rounded-[28px]">
-        <div className="relative flex h-32 w-32 items-center justify-center rounded-[28px] bg-[linear-gradient(145deg,var(--color-brand),color-mix(in_srgb,var(--color-brand)_55%,black))] text-white shadow-[0_24px_50px_rgb(0_56_168/0.35)]">
+        <div className="relative flex h-32 w-32 items-center justify-center rounded-[28px] bg-[linear-gradient(145deg,var(--color-brand-fill),color-mix(in_srgb,var(--color-brand-fill)_55%,black))] text-white shadow-[0_24px_50px_rgb(0_56_168/0.35)]">
           <span className="absolute inset-0 rounded-[28px] bg-[linear-gradient(160deg,rgb(255_255_255/0.28),transparent_45%)]" />
           <ShieldCheck className="relative h-16 w-16 [transform:translateZ(40px)]" strokeWidth={1.6} />
           <span className="absolute -right-2 -top-2 h-6 w-6 rounded-full border-4 border-panel bg-flag-gold [transform:translateZ(60px)]" />

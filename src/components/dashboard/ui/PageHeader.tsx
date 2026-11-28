@@ -27,7 +27,7 @@ export default function PageHeader({ title, description, eyebrow, icon, back, ch
           {icon && (
             <span
               aria-hidden="true"
-              className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-dash-primary to-[#1f4fbf] text-white shadow-[0_8px_20px_rgb(0_56_168/0.25)] sm:flex"
+              className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-fill to-[#1f4fbf] text-white shadow-[0_8px_20px_rgb(0_56_168/0.25)] sm:flex"
             >
               <Icon name={icon} className="h-6 w-6" />
             </span>

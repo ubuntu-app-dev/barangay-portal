@@ -11,7 +11,7 @@ export default function BoundaryCompass({ name, north, east, south, west }: Prop
       <div className={cell}><span className={dir}>North</span><span className={place}>{north || "Not set"}</span></div>
       <span aria-hidden="true" />
       <div className={cell}><span className={dir}>West</span><span className={place}>{west || "Not set"}</span></div>
-      <div className="flex min-h-[56px] items-center justify-center rounded-xl bg-brand px-2 py-2 text-center text-[13px] font-bold text-white">{name}</div>
+      <div className="flex min-h-[56px] items-center justify-center rounded-xl bg-brand-fill px-2 py-2 text-center text-[13px] font-bold text-white">{name}</div>
       <div className={cell}><span className={dir}>East</span><span className={place}>{east || "Not set"}</span></div>
       <span aria-hidden="true" />
       <div className={cell}><span className={dir}>South</span><span className={place}>{south || "Not set"}</span></div>

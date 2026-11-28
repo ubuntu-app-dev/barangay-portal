@@ -52,7 +52,7 @@ async function Content({ params, searchParams }: Props) {
           const returned = s.status === "RETURNED" && i === 1;
           return (
             <li key={step} className="flex items-center gap-3">
-              <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[13px] font-bold ${returned ? "bg-dash-gold text-ink" : reached ? "bg-dash-primary text-white" : "bg-ground-muted text-ink-secondary"}`}>
+              <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[13px] font-bold ${returned ? "bg-dash-gold text-[#16191f]" : reached ? "bg-brand-fill text-white" : "bg-ground-muted text-ink-secondary"}`}>
                 {returned ? "!" : reached ? <Icon name="check" className="h-4 w-4" /> : i + 1}
               </span>
               <span className={`text-[13.5px] font-semibold ${reached ? "" : "text-ink-secondary"}`}>{returned ? "Returned for revision" : label(SUBMISSION_STATUS, step)}</span>

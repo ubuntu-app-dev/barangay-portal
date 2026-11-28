@@ -76,7 +76,7 @@ export default function WorkflowTimeline() {
                 transition={{ type: "spring", stiffness: 260, damping: 18 }}
                 className={`flex h-14 w-14 items-center justify-center rounded-full border-2 transition-colors duration-300 motion-reduce:transition-none ${
                   on
-                    ? "border-flag-gold bg-flag-gold text-ink"
+                    ? "border-flag-gold bg-flag-gold text-[#16191f]"
                     : "border-on-field-secondary/40 bg-black/30 text-on-field"
                 }`}
               >

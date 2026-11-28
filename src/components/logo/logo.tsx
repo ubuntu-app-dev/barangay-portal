@@ -1,19 +1,23 @@
-/** Brand mark: three connected nodes (barangay, municipality, system) around a gold core. */
-export default function Logo() {
+/**
+ * Brand mark: the LGU shield (sun, three stars, and the community under one roof).
+ * Shows the dark-mode artwork when the dark theme is on. On blue panels (`onDark`)
+ * it sits on a white tile so the blue shield does not disappear into the background.
+ */
+export default function Logo({ onDark = false, className = "h-10 w-10" }: { onDark?: boolean; className?: string }) {
+  if (onDark) {
+    return (
+      <span aria-hidden="true" className={`flex shrink-0 items-center justify-center rounded-xl bg-white p-0.5 shadow-sm ${className}`}>
+        {/* eslint-disable-next-line @next/next/no-img-element -- small static SVG, no optimization needed */}
+        <img src="/brand/lgu-icon.svg" alt="" className="h-full w-full" draggable={false} />
+      </span>
+    );
+  }
   return (
-    <svg aria-hidden="true" viewBox="0 0 40 40" className="h-10 w-10 shrink-0">
-      <rect width="40" height="40" rx="10" className="fill-brand" />
-      <g className="stroke-white/70" strokeWidth="1.6" strokeLinecap="round">
-        <line x1="20" y1="9" x2="20" y2="22" />
-        <line x1="9" y1="30" x2="20" y2="22" />
-        <line x1="31" y1="30" x2="20" y2="22" />
-      </g>
-      <g className="fill-white">
-        <circle cx="20" cy="9" r="3.2" />
-        <circle cx="9" cy="30" r="3.2" />
-        <circle cx="31" cy="30" r="3.2" />
-      </g>
-      <circle cx="20" cy="22" r="4.5" className="fill-flag-gold" />
-    </svg>
+    <span aria-hidden="true" className={`relative block shrink-0 ${className}`}>
+      {/* eslint-disable-next-line @next/next/no-img-element -- small static SVG, no optimization needed */}
+      <img src="/brand/lgu-icon.svg" alt="" className="h-full w-full dark:hidden" draggable={false} />
+      {/* eslint-disable-next-line @next/next/no-img-element -- small static SVG, no optimization needed */}
+      <img src="/brand/lgu-icon-dark.svg" alt="" className="hidden h-full w-full dark:block" draggable={false} />
+    </span>
   );
 }

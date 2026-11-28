@@ -20,8 +20,8 @@ export default function DashboardMockup() {
   const bars = [42, 58, 50, 72, 64, 88];
   const months = ["Jun", "Jul", "Aug", "Sep", "Oct", "Nov"];
   const submissions = [
-    { title: "Q4 Barangay Profile", office: "MPDO", status: "Under review", tone: "bg-amber-100 text-amber-800" },
-    { title: "Monthly Demographics", office: "MPDO", status: "Approved", tone: "bg-emerald-100 text-emerald-800" },
+    { title: "Q4 Barangay Profile", office: "MPDO", status: "Under review", tone: "bg-dash-gold-soft text-dash-gold-ink" },
+    { title: "Monthly Demographics", office: "MPDO", status: "Approved", tone: "bg-dash-success-soft text-dash-success" },
     { title: "Blotter Summary", office: "MPS", status: "Due in 3 days", tone: "bg-ground-muted text-ink-secondary" },
   ];
 
@@ -52,8 +52,11 @@ export default function DashboardMockup() {
 
         <div className="grid grid-cols-[52px_1fr]">
           {/* Sidebar */}
-          <div className="flex flex-col items-center gap-3 bg-[color-mix(in_srgb,var(--color-brand)_92%,black)] py-4 text-white/70">
-            <span className="mb-1 flex h-7 w-7 items-center justify-center rounded-lg bg-flag-gold text-[11px] font-bold text-ink">L</span>
+          <div className="flex flex-col items-center gap-3 bg-[color-mix(in_srgb,var(--color-flag-blue)_92%,black)] py-4 text-white/70">
+            <span className="mb-1 flex h-8 w-8 items-center justify-center rounded-lg bg-white p-0.5">
+              {/* eslint-disable-next-line @next/next/no-img-element -- small static SVG */}
+              <img src="/brand/lgu-icon.svg" alt="" className="h-full w-full" />
+            </span>
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/15 text-white"><LayoutDashboard className="h-4 w-4" /></span>
             <Users className="h-4 w-4" />
             <FileText className="h-4 w-4" />
@@ -85,7 +88,7 @@ export default function DashboardMockup() {
                 <div key={label} className="rounded-lg border border-rule p-2.5">
                   <p className="text-[10px] text-ink-secondary">{label}</p>
                   <p className="font-display text-lg font-bold leading-tight">{value}</p>
-                  <p className="text-[10px] font-medium text-emerald-700">{delta}</p>
+                  <p className="text-[10px] font-medium text-dash-success">{delta}</p>
                 </div>
               ))}
             </div>
@@ -154,7 +157,7 @@ export default function DashboardMockup() {
       {/* Floating: a notification */}
       <div aria-hidden="true" className="absolute -bottom-9 -right-2 [transform:translateZ(90px)] sm:-right-8">
       <div className="float-slower flex max-w-[250px] items-start gap-2.5 rounded-xl border border-rule bg-panel p-3 shadow-[0_12px_30px_rgb(22_25_31/0.14)]">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-dash-success-soft text-dash-success">
           <svg viewBox="0 0 16 16" className="h-4 w-4 fill-none stroke-current" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 8.5 3.2 3L13 4.5" /></svg>
         </span>
         <span>

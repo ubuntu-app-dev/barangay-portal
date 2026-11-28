@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Brand } from "@/components/logo";
-import { TricolorRule } from "@/components/shared";
+import { ThemeToggle, TricolorRule } from "@/components/shared";
 import CopyrightYear from "@/components/shared/CopyrightYear";
 import { brand } from "@/lib/brand";
 import { ROUTES } from "@/lib/routes";
@@ -48,12 +48,15 @@ export default function LoginShell({
           <div className="flex h-full flex-col">
             <div className="flex items-center justify-between gap-4">
               <Brand onDark />
+              <div className="flex items-center gap-3">
+              <ThemeToggle onDark />
               <Link
                 href={ROUTES.home}
                 className="text-[14px] text-on-field-secondary hover:text-on-field hover:underline"
               >
                 <span aria-hidden="true">&larr; </span>Back to home
               </Link>
+              </div>
             </div>
             <div className="mt-10 lg:mt-16">{headline}</div>
             {journey && <div className="mt-10 hidden lg:block">{journey}</div>}

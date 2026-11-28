@@ -10,7 +10,7 @@ export default function Brand({ onDark = false }: { onDark?: boolean }) {
       className="flex items-center gap-3"
       aria-label={`${brand.name} home`}
     >
-      <Logo />
+      <Logo onDark={onDark} className="h-11 w-11" />
       <span className="leading-tight">
         <span className="block font-display text-lg font-bold tracking-[-0.02em]">
           {brand.name}

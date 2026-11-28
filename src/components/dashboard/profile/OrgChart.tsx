@@ -2,7 +2,7 @@ import type { Official } from "@/types/profile";
 
 function Node({ title, name, featured = false }: { title: string; name: string; featured?: boolean }) {
   return (
-    <div className={`min-w-[170px] rounded-2xl border px-4 py-3 text-center shadow-sm ${featured ? "border-brand bg-brand text-white" : "border-rule bg-panel"}`}>
+    <div className={`min-w-[170px] rounded-2xl border px-4 py-3 text-center shadow-sm ${featured ? "border-brand bg-brand-fill text-white" : "border-rule bg-panel"}`}>
       <p className={`text-[12px] ${featured ? "text-white/85" : "text-ink-secondary"}`}>{title}</p>
       <p className="font-display text-[14px] font-bold">{name}</p>
     </div>

@@ -3,6 +3,7 @@ import Link from "next/link";
 import Icon from "@/components/dashboard/ui/Icon";
 import type { IconName } from "@/components/dashboard/ui/icon-paths";
 import Popover from "@/components/dashboard/ui/Popover";
+import ThemeToggle from "@/components/shared/ThemeToggle";
 import { WORKSPACES, type WorkspaceKey } from "@/config/workspaces";
 
 type Props = { ws: WorkspaceKey; name: string; position: string; onLogout: () => void };
@@ -29,7 +30,7 @@ export default function UserMenu({ ws, name, position, onLogout }: Props) {
         <>
           <span
             aria-hidden="true"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-dash-primary text-[13px] font-bold text-white"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-fill text-[13px] font-bold text-white"
           >
             {initials}
           </span>
@@ -64,6 +65,10 @@ export default function UserMenu({ ws, name, position, onLogout }: Props) {
               </li>
             ))}
           </ul>
+          <div className="mt-1 flex items-center justify-between gap-3 border-t border-rule px-3 py-2">
+            <span className="text-[14px]">Theme</span>
+            <ThemeToggle />
+          </div>
           <button
             type="button"
             onClick={() => {

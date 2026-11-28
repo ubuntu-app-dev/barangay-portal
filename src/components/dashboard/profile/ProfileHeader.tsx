@@ -16,7 +16,7 @@ export default function ProfileHeader({ profile }: { profile: BarangayProfile })
         <div aria-hidden="true" className="h-24 bg-[linear-gradient(120deg,#0038a8_0%,#2a62d9_60%,#fcd116_140%)]" />
         <div className="px-5 pb-6 sm:px-8">
           <div className="-mt-12 flex flex-wrap items-end gap-x-6 gap-y-4">
-            <span aria-hidden="true" className="flex h-24 w-24 shrink-0 items-center justify-center rounded-3xl border-4 border-white bg-brand text-white shadow-md"><Icon name="building" className="h-10 w-10" /></span>
+            <span aria-hidden="true" className="flex h-24 w-24 shrink-0 items-center justify-center rounded-3xl border-4 border-white bg-brand-fill text-white shadow-md"><Icon name="building" className="h-10 w-10" /></span>
             <div className="min-w-0 flex-1 pb-1">
               <h1 className="font-display text-[clamp(1.5rem,2.6vw,2rem)] font-bold tracking-[-0.02em]">{g.name}</h1>
               <p className="text-ink-secondary">{g.municipality}, {g.province}</p>

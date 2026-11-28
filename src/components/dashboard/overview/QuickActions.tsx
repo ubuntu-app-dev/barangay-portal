@@ -22,7 +22,7 @@ export default function QuickActions() {
               href={a.href}
               className="surface group flex h-full items-center gap-3 p-3.5 transition hover:border-dash-primary/40 hover:shadow-card-hover motion-reduce:transition-none"
             >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-dash-primary-soft text-dash-primary transition-colors group-hover:bg-dash-primary group-hover:text-white">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-dash-primary-soft text-dash-primary transition-colors group-hover:bg-brand-fill group-hover:text-white">
                 <Icon name={a.icon} className="h-5 w-5" />
               </span>
               <span className="min-w-0 leading-tight">

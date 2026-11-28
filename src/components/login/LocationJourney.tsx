@@ -24,7 +24,7 @@ export default function LocationJourney({ steps }: { steps: JourneyStep[] }) {
               animate={{ scale: s.done && !reduce ? [1, 1.25, 1] : 1 }}
               transition={{ duration: 0.45 }}
               className={`relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 ${
-                s.done ? "border-flag-gold bg-flag-gold text-ink" : current ? "border-flag-gold text-flag-gold" : "border-on-field-secondary/40 text-on-field-secondary"
+                s.done ? "border-flag-gold bg-flag-gold text-[#16191f]" : current ? "border-flag-gold text-flag-gold" : "border-on-field-secondary/40 text-on-field-secondary"
               }`}
             >
               {s.done ? (

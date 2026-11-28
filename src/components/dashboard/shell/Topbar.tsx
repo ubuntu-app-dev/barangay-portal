@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import Icon from "@/components/dashboard/ui/Icon";
+import ThemeToggle from "@/components/shared/ThemeToggle";
 import { WORKSPACES, type WorkspaceKey } from "@/config/workspaces";
 import type { AppNotification } from "@/types/dashboard";
 import Breadcrumbs from "./Breadcrumbs";
@@ -33,7 +34,7 @@ export default function Topbar({
         type="button"
         onClick={onToggleSidebar}
         aria-label="Toggle sidebar"
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-panel text-ink shadow-sm hover:bg-white lg:hidden"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-panel text-ink shadow-sm hover:bg-ground-muted lg:hidden"
       >
         <Icon name="menu" />
       </button>
@@ -54,6 +55,7 @@ export default function Topbar({
           <Icon name="help" />
         </Link>
       )}
+      <ThemeToggle className="hidden sm:inline-flex" />
       <NotificationCenter ws={ws} items={notifications} />
       <UserMenu ws={ws} name={user.name} position={user.position} onLogout={onLogout} />
     </header>

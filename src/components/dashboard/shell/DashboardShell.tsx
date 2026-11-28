@@ -96,7 +96,7 @@ export default function DashboardShell({
             {user.mustChangePassword && (
               <p className="no-print mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dash-gold/40 bg-dash-gold-soft px-4 py-3 text-[14px] font-medium text-dash-gold-ink">
                 Your administrator set a temporary password. Please change it now.
-                <Link href={WORKSPACES[ws].links.password} className="btn btn-sm bg-dash-gold text-ink">
+                <Link href={WORKSPACES[ws].links.password} className="btn btn-sm bg-dash-gold text-[#16191f]">
                   Change password
                 </Link>
               </p>

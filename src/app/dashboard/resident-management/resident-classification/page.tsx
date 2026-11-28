@@ -47,7 +47,7 @@ async function Content({ searchParams }: Props) {
                 aria-current={on ? "page" : undefined}
                 className={`surface flex items-center gap-3 p-4 transition hover:border-dash-primary/40 ${on ? "!border-dash-primary bg-dash-primary-soft/60 ring-2 ring-dash-primary/15" : ""}`}
               >
-                <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${on ? "bg-dash-primary text-white" : "bg-dash-primary-soft text-dash-primary"}`}>
+                <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${on ? "bg-brand-fill text-white" : "bg-dash-primary-soft text-dash-primary"}`}>
                   <Icon name={ICONS[k]} className="h-5 w-5" />
                 </span>
                 <span className="min-w-0">

@@ -67,7 +67,7 @@ export default function ScreenCarousel({ screens }: { screens: Screen[] }) {
               {on && (
                 <motion.span
                   layoutId="screen-tab"
-                  className="absolute inset-0 rounded-full bg-brand shadow-[0_6px_16px_rgb(0_56_168/0.3)]"
+                  className="absolute inset-0 rounded-full bg-brand-fill shadow-[0_6px_16px_rgb(0_56_168/0.3)]"
                   transition={{ type: "spring", stiffness: 380, damping: 32 }}
                 />
               )}

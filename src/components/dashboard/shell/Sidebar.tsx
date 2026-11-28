@@ -75,7 +75,7 @@ export default function Sidebar({
   const Badge = ({ count }: { count?: number }) =>
     count ? (
       <span
-        className={`ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1.5 text-[11px] font-bold text-white ${collapsed ? "lg:absolute lg:right-1.5 lg:top-0.5 lg:ml-0 lg:h-4 lg:min-w-4 lg:px-1 lg:text-[10px]" : ""}`}
+        className={`ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-fill px-1.5 text-[11px] font-bold text-white ${collapsed ? "lg:absolute lg:right-1.5 lg:top-0.5 lg:ml-0 lg:h-4 lg:min-w-4 lg:px-1 lg:text-[10px]" : ""}`}
       >
         {count}
         <span className="visually-hidden"> pending</span>

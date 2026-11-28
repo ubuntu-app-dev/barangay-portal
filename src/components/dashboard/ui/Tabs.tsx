@@ -21,7 +21,7 @@ export default function Tabs({ tabs, label }: { tabs: TabDef[]; label: string })
                 href={t.href}
                 scroll={false}
                 aria-current={active ? "page" : undefined}
-                className={`flex items-center gap-2 whitespace-nowrap rounded-xl px-4 py-2 text-[13.5px] font-semibold transition-colors motion-reduce:transition-none ${active ? "bg-dash-primary text-white shadow-sm" : "text-ink-secondary hover:bg-ground-muted hover:text-ink"}`}
+                className={`flex items-center gap-2 whitespace-nowrap rounded-xl px-4 py-2 text-[13.5px] font-semibold transition-colors motion-reduce:transition-none ${active ? "bg-brand-fill text-white shadow-sm" : "text-ink-secondary hover:bg-ground-muted hover:text-ink"}`}
               >
                 {t.label}
                 {t.count !== undefined && (

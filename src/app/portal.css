@@ -14,6 +14,14 @@
   --dp-color-on-accent: #ffffff;
   --dp-color-flag-red: #ce1126;
   --dp-color-flag-gold: #fcd116;
+  /* Blue for filled surfaces that carry white text (buttons, badges). Same as accent in light mode. */
+  --dp-color-brand-fill: #0038a8;
+  /* The flag blue itself, used by the big blue bands in both themes. */
+  --dp-color-flag-blue: #0038a8;
+  --dp-color-placeholder: #8a91a0;
+  --dp-color-rule-strong: #c3c8d2;
+  --dp-color-table-head: #f8f9fc;
+  --dp-color-row-hover: #f8faff;
   --dp-radius-panel: 12px;
   --dp-motion-interaction: 160ms;
   --dp-motion-easing: ease-out;
@@ -30,6 +38,9 @@
   --color-flag-red: var(--dp-color-flag-red);
   --color-flag-gold: var(--dp-color-flag-gold);
   --color-on-brand: var(--dp-color-on-accent);
+  --color-brand-fill: var(--dp-color-brand-fill);
+  --color-flag-blue: var(--dp-color-flag-blue);
+  --color-rule-strong: var(--dp-color-rule-strong);
   --color-field: var(--dp-color-field);
   --color-on-field: var(--dp-color-on-field);
   --color-on-field-secondary: var(--dp-color-on-field-secondary);
@@ -81,11 +92,11 @@ body {
   transform: none;
 }
 .btn-primary {
-  background: var(--dp-color-accent);
+  background: var(--dp-color-brand-fill);
   color: var(--dp-color-on-accent);
 }
 .btn-primary:hover {
-  background: color-mix(in srgb, var(--dp-color-accent) 86%, black);
+  background: color-mix(in srgb, var(--dp-color-brand-fill) 86%, black);
   box-shadow: 0 6px 16px rgb(0 56 168 / 0.28);
 }
 .btn-secondary {
@@ -169,6 +180,8 @@ body {
   border-radius: 8px;
   background: var(--dp-color-panel);
   color: var(--dp-color-ink);
+  /* Dialogs opened from a right-aligned table column must not inherit that alignment. */
+  text-align: left;
 }
 .skip-link:focus {
   top: 1rem;
@@ -285,21 +298,22 @@ body {
 .brand-field {
   background: linear-gradient(
     160deg,
-    var(--dp-color-accent) 0%,
-    color-mix(in srgb, var(--dp-color-accent) 62%, black) 100%
+    var(--dp-color-flag-blue) 0%,
+    color-mix(in srgb, var(--dp-color-flag-blue) 62%, black) 100%
   );
 }
 
 /* Footer: a deeper blue than .brand-field so the page ends on a solid band. */
 .brand-field-deep {
-  background: color-mix(in srgb, var(--dp-color-accent) 45%, black);
+  background: color-mix(in srgb, var(--dp-color-flag-blue) 45%, black);
 }
 
 @layer components {
 /* Gold button for use on blue fields. */
 .btn-gold {
   background: var(--dp-color-flag-gold);
-  color: var(--dp-color-ink);
+  /* Dark text on gold in both themes. */
+  color: #16191f;
 }
 .btn-gold:hover {
   background: color-mix(in srgb, var(--dp-color-flag-gold) 88%, black);
@@ -453,10 +467,10 @@ body {
     box-shadow var(--dp-motion-interaction) var(--dp-motion-easing);
 }
 .field::placeholder {
-  color: #8a91a0;
+  color: var(--dp-color-placeholder);
 }
 .field:hover {
-  border-color: #c3c8d2;
+  border-color: var(--dp-color-rule-strong);
 }
 .field:focus {
   outline: none;
@@ -497,7 +511,7 @@ textarea.field {
   position: sticky;
   top: 0;
   z-index: 1;
-  background: #f8f9fc;
+  background: var(--dp-color-table-head);
   color: var(--dp-color-ink-secondary);
   font-size: 12px;
   font-weight: 600;
@@ -519,7 +533,7 @@ textarea.field {
   transition: background-color 120ms ease-out;
 }
 .data-table tbody tr:hover {
-  background: #f8faff;
+  background: var(--dp-color-row-hover);
 }
 }
 
@@ -531,6 +545,7 @@ dialog.modal {
   border-radius: 20px;
   width: min(92vw, 520px);
   box-shadow: var(--dash-shadow-lg);
+  background: var(--dp-color-panel);
   color: var(--dp-color-ink);
 }
 dialog.modal::backdrop {
@@ -578,5 +593,76 @@ dialog.modal[open] {
     border: 0 !important;
     border-radius: 0 !important;
     padding: 0 !important;
+  }
+}
+
+/* ───────── Dark theme ─────────
+ * Turned on by the "dark" class on <html> (set by the theme toggle, or by the device when
+ * "System" is chosen). Only tokens change here; components keep their classes.
+ * The accent becomes a lighter blue so blue text stays readable on dark surfaces, while
+ * --dp-color-brand-fill stays deep enough for white text on buttons.
+ */
+.dark {
+  color-scheme: dark;
+  --dp-color-ground: #0b1120;
+  --dp-color-ground-muted: #121b2e;
+  --dp-color-panel: #141e33;
+  --dp-color-rule: #27344f;
+  --dp-color-rule-strong: #3a4a6b;
+  --dp-color-ink: #e8edf6;
+  --dp-color-ink-secondary: #a5b0c6;
+  --dp-color-accent: #7ea8ff;
+  --dp-color-brand-fill: #2f6be6;
+  --dp-color-flag-red: #ff5a6b;
+  --dp-color-flag-gold: #ffd60a;
+  --dp-color-placeholder: #6f7b93;
+  --dp-color-table-head: #18233a;
+  --dp-color-row-hover: #19253f;
+
+  --dash-primary-soft: #18284a;
+  --dash-secondary: #7c9ff0;
+  --dash-secondary-soft: #172440;
+  --dash-success: #5fd08f;
+  --dash-success-soft: #11301f;
+  --dash-gold-soft: #3a300c;
+  --dash-gold-ink: #f3d257;
+  --dash-canvas: #0a1020;
+  --dash-danger: #ff7a6e;
+  --dash-danger-soft: #3b1714;
+  --dash-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3), 0 1px 3px rgb(0 0 0 / 0.25);
+  --dash-shadow-md: 0 4px 12px rgb(0 0 0 / 0.35), 0 2px 4px rgb(0 0 0 / 0.25);
+  --dash-shadow-lg: 0 20px 48px rgb(0 0 0 / 0.55);
+}
+.dark select.field {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a5b0c6' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+.dark .btn-danger {
+  color: #1a0806;
+}
+.dark .dash {
+  background:
+    radial-gradient(1200px 400px at 100% -10%, rgb(126 168 255 / 0.07), transparent 70%),
+    var(--dash-canvas);
+}
+/* Smooth the switch between themes, but never animate on first paint or with reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  html.theme-anim,
+  html.theme-anim * {
+    transition:
+      background-color 250ms ease,
+      border-color 250ms ease,
+      color 250ms ease !important;
+  }
+}
+/* Printing always uses the light palette. */
+@media print {
+  .dark {
+    color-scheme: light;
+    --dp-color-ground: #fcfcfd;
+    --dp-color-panel: #ffffff;
+    --dp-color-ink: #16191f;
+    --dp-color-ink-secondary: #454c58;
+    --dp-color-rule: #dde0e6;
+    --dp-color-accent: #0038a8;
   }
 }

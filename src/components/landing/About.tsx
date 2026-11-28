@@ -7,7 +7,7 @@ import { Eyebrow, LandingIcon } from "./icons";
 const accents = [
   { bar: "bg-brand", tile: "bg-brand/10 text-brand" },
   { bar: "bg-flag-red", tile: "bg-flag-red/10 text-flag-red" },
-  { bar: "bg-flag-gold", tile: "bg-flag-gold/25 text-[#7a6200]" },
+  { bar: "bg-flag-gold", tile: "bg-flag-gold/25 text-dash-gold-ink" },
 ];
 
 export default function About() {

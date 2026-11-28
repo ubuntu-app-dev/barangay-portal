@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600" role="img" aria-label="LGU Municipal and Barangay System logo">
+  <title>LGU — Municipal &amp; Barangay System</title>
+  <path d="M300 42 L484 120 V342 C484 440 390 520 300 570 C210 520 116 440 116 342 V120 Z" fill="#CE1126"/>
+  <path d="M300 30 L484 108 V330 C484 428 390 508 300 558 C210 508 116 428 116 330 V108 Z" fill="#0038A8"/>
+  <path d="M300 58 L456 128 V330 C456 414 376 484 300 528 C224 484 144 414 144 330 V128 Z" fill="#FFFFFF"/>
+  <defs>
+    <polygon id="ray" points="300,92 291,168 309,168" fill="#FCD116"/>
+    <polygon id="star" points="0,-26 6.1,-8.1 24.7,-8.1 9.9,2.9 15.3,20.7 0,10.2 -15.3,20.7 -9.9,2.9 -24.7,-8.1 -6.1,-8.1" fill="#FCD116"/>
+  </defs>
+  <g fill="#FCD116">
+    <use href="#ray" transform="rotate(-90 300 210)"/>
+    <use href="#ray" transform="rotate(-64 300 210)"/>
+    <use href="#ray" transform="rotate(-38 300 210)"/>
+    <use href="#ray" transform="rotate(-13 300 210)"/>
+    <use href="#ray" transform="rotate(13 300 210)"/>
+    <use href="#ray" transform="rotate(38 300 210)"/>
+    <use href="#ray" transform="rotate(64 300 210)"/>
+    <use href="#ray" transform="rotate(90 300 210)"/>
+    <path d="M255 210 A45 45 0 0 1 345 210 Z"/>
+  </g>
+  <g fill="#FCD116">
+    <use href="#star" transform="translate(220 270)"/>
+    <use href="#star" transform="translate(300 270)"/>
+    <use href="#star" transform="translate(380 270)"/>
+  </g>
+  <path d="M148 385 L300 305 L452 385" fill="none" stroke="#0038A8" stroke-width="18" stroke-linejoin="round" stroke-linecap="round"/>
+  <g fill="#0038A8">
+    <circle cx="225" cy="368" r="18"/>
+    <polygon points="205,395 245,395 236,466 214,466"/>
+    <circle cx="300" cy="360" r="22"/>
+    <polygon points="274,392 326,392 312,488 288,488"/>
+    <circle cx="375" cy="368" r="18"/>
+    <polygon points="355,395 395,395 386,466 364,466"/>
+  </g>
+</svg>

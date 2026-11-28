@@ -87,7 +87,7 @@ async function Content({ params, searchParams }: Props) {
                 {
                   key: "rel",
                   header: "Relationship",
-                  cell: (m) => (m.relationship === "HEAD" ? <span className="rounded-full bg-dash-primary px-2.5 py-0.5 text-[12px] font-semibold text-white">Head</span> : label(RELATIONSHIP, m.relationship) || "—"),
+                  cell: (m) => (m.relationship === "HEAD" ? <span className="rounded-full bg-brand-fill px-2.5 py-0.5 text-[12px] font-semibold text-white">Head</span> : label(RELATIONSHIP, m.relationship) || "—"),
                 },
                 { key: "age", header: "Age / Sex", cell: (m) => `${ageOf(m.birthDate)} · ${label(SEX, m.sex)}` },
                 { key: "family", header: "Family", cell: (m) => m.family?.name ?? "—", optional: true },

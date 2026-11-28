@@ -20,7 +20,7 @@ export default function Features() {
               <Tilt max={5} glare className="h-full rounded-panel">
               <article className="group flex h-full flex-col rounded-panel border border-rule bg-panel p-6 shadow-[0_1px_2px_rgb(22_25_31/0.04),0_10px_24px_rgb(22_25_31/0.05)] transition-shadow hover:shadow-[0_24px_50px_rgb(0_56_168/0.12)] md:p-7">
                 <div className="flex items-start gap-4">
-                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand text-white shadow-[0_6px_14px_rgb(0_56_168/0.25)] transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-fill text-white shadow-[0_6px_14px_rgb(0_56_168/0.25)] transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110">
                     <LandingIcon name={c.icon} className="h-6 w-6" />
                   </span>
                   <div>

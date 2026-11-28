@@ -1,5 +1,5 @@
 import { Brand } from "@/components/logo";
-import { ButtonLink, TricolorRule } from "@/components/shared";
+import { ButtonLink, ThemeToggle, TricolorRule } from "@/components/shared";
 import { ScrollProgress } from "@/components/motion";
 import MobileNav from "./MobileNav";
 import PrimaryNav from "./PrimaryNav";
@@ -19,6 +19,7 @@ export default function Header() {
           <Brand />
           <PrimaryNav links={navLinks} />
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <span className="hidden sm:block">
               <ButtonLink href={ROUTES.login}>Login to Portal</ButtonLink>
             </span>
