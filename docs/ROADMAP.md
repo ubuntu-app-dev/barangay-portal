@@ -97,4 +97,5 @@ Defaults per role live in `src/server/auth.ts` (`ROLE_PERMISSIONS`). Extra grant
 - **Tests**: the end-to-end flows used during development (all four roles: sign-in, register, issue, void, KP case, submit → review → return, account creation with temporary password, suspension, banner, rate limit) should become a Playwright suite in CI.
 - **Municipal document defaults**: municipalities cannot yet change the default certificate wording and fees for new barangays (barangays can change their own). Needs one template table.
 - **Online requests from residents**: the `ONLINE` channel exists in the schema, but there is no resident-facing page yet.
+- **AI assistant key**: the in-app assistant (README, AI assistant) needs `ANTHROPIC_API_KEY` in Vercel, and a monthly spend limit set in the Anthropic Console.
 - **Deployment**: managed PostgreSQL, `DATABASE_URL`, `npm run build`, run `prisma migrate deploy` on release.

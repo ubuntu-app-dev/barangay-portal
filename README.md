@@ -2,7 +2,7 @@
 
 Centralized LGU platform with two systems (Barangay Information System, Municipal System) and four user levels (Barangay Secretary, Municipal Personnel, Municipal IT Admin, Superadmin).
 
-**Stack:** Next.js 16 (App Router, TypeScript) · PostgreSQL + Prisma 7 · Tailwind CSS v4 · Framer Motion
+**Stack:** Next.js 16 (App Router, TypeScript) · PostgreSQL + Prisma 7 · Tailwind CSS v4 · Framer Motion · Claude API (in-app assistant)
 
 ## Setup
 
@@ -31,12 +31,14 @@ src/
   components/
     logo/              Logo, Brand (logo + name lockup)
     icons/             one file per icon
-    motion/            Reveal, StaggerList/Item, CountUp, DrawArrow, DrawPath, RotatingWord, MotionProvider
-    shared/            ButtonLink, TricolorRule
+    motion/            Reveal, StaggerList/Item, Tilt, AnimatedHeadline, ScrollProgress, DrawPath, MotionProvider
+    shared/            ButtonLink, TricolorRule, ThemeToggle, ThemeScript
+    assistant/         AssistantWidget (AI chat in the signed-in areas)
     layout/            Header, MobileNav, Footer
-    landing/           Hero, SystemsOverview, UserLevels, Workflow, DataPrivacy, CallToAction
+    landing/           Hero, About, Features, Gallery, HowItWorks, Security, Contact
     ui/                shadcn / Vengeance UI components
-  data/                landing-content.ts, navigation.ts
+  data/                landing-content.ts, navigation.ts, help-content.ts, assistant-starters.ts
+  server/assistant/    knowledge base, tools, and system prompt for the AI assistant
   types/               landing.ts
   lib/                 brand.ts, routes.ts, styles.ts
 ```
@@ -48,21 +50,13 @@ src/
 - New icon: one file in `components/icons/`, exported from `index.ts`.
 - Import through folder barrels, e.g. `import { Hero } from "@/components/landing"`.
 
-## Hero animated map (ReactDrops "Liquid Glass Logo")
+## Landing page
 
-```bash
-npx shadcn@latest add https://reactdrops.dev/r/liquid-glass-logo.json
-```
+All text is in `data/landing-content.ts`. The "Explore the Platform" carousel shows real screenshots from `public/screenshots/` (taken from the sample data; replace them with your own when you have real data). Contact details appear on the Contact section only when filled in under `contact.details`.
 
-This installs four files into `src/components/` (`liquid-glass-logo.tsx`, `-renderer.ts`, `-shaders.ts`, `.css`). They are not bundled in this repo's zip; install them with the command above and keep their license header. The hero uses `components/landing/HeroMap.tsx` with `public/philippines.svg`. The component recolors the map (colors inside the SVG do not matter), and theme, background and map color are set in `HeroMap.tsx`.
+## Light and dark mode
 
-## Gallery (ReactDrops "Fan Gallery")
-
-```bash
-npx shadcn@latest add https://reactdrops.dev/r/fan-gallery.json
-```
-
-Installs `fan-gallery.tsx` and its helpers into `src/components/` (not bundled in this zip; keep their license header). Images live in `public/gallery/` and are listed in `data/gallery-content.ts`. The six SVGs there are illustrative placeholders: replace them with real screenshots (4:5 portrait works best), then set `galleryIsIllustrative` to `false`.
+The theme is a `dark` class on `<html>`, set before the page paints by `components/shared/ThemeScript.tsx` and changed with `ThemeToggle`. Only CSS tokens change (`app/portal.css`, `.dark { ... }`). Blue fills that carry white text use `bg-brand-fill`; the large blue bands use `flag-blue`; certificates and printing stay light.
 
 ## Login page (`/login`)
 
@@ -120,6 +114,42 @@ Seed accounts (password `Password123`):
 | Superadmin | `/superadmin` | `config/workspaces.ts` |
 
 All four share `components/dashboard/shell` (pass the workspace key). Staff pages call `requireRole(...)` from `lib/auth/staff.ts`; secretary pages call `requireSession()`. Settings and notification pages are shared components (`components/settings`, `components/announcements/NotificationsView`).
+
+## AI assistant
+
+A chat widget ("Ask AI") in all four signed-in areas. It answers how-to and navigation questions and questions about the user's figures. Before answering it retrieves from:
+
+- `search_help`: the knowledge base in `server/assistant/knowledge.ts` (page descriptions, task guides, FAQs; the secretary guides are shared with the Help page through `data/help-content.ts`).
+- `get_statistics`: aggregate figures from the same report builders as the Reports pages, limited to the user's barangay, municipality, or (superadmin) the whole system.
+- `get_work_status`: what needs attention (pending requests, KP deadlines, reports due, review queue, account health).
+
+Privacy (RA 10173): the tools return totals, statuses, and names of barangays, offices, and reports only, never a resident's name or record, and never VAWC cases. Conversations are not stored on the server; the browser keeps the current one for the tab only.
+
+Setup: add one of these to `.env.local` and to Vercel (Production):
+
+```bash
+# Google AI Studio (Gemini) — currently used
+ASSISTANT_PROVIDER="gemini"
+GEMINI_API_KEY="..."
+GEMINI_MODEL="gemini-3-flash-preview"            # optional; this is the default
+GEMINI_FALLBACK_MODELS="gemini-3.1-flash-lite,gemini-flash-lite-latest"  # optional; tried when a model is busy, unavailable, out of quota, or silent for 25 s
+
+# Anthropic directly (key from console.anthropic.com)
+ANTHROPIC_API_KEY="sk-ant-..."
+
+# or an Anthropic-compatible gateway, e.g. OpenCode (pay-as-you-go credits)
+ANTHROPIC_BASE_URL="https://opencode.ai/inference/anthropic"
+ANTHROPIC_AUTH_TOKEN="oc_sk_..."
+
+# optional: another Claude model, e.g. claude-haiku-5-5 (cheaper) — default claude-opus-5-5
+ASSISTANT_MODEL="claude-opus-5-5"
+```
+
+Through a gateway, questions and the figures the tools return pass through the gateway before reaching the model, and the Anthropic-only refusal fallback is not sent.
+
+Without a key the widget shows "The assistant is not set up yet". Set a monthly spend limit (Anthropic Console, or a budget in the OpenCode console): the per-user limit in `app/api/assistant/route.ts` (20 questions per 10 minutes) is kept in memory per server instance and is not a hard cap on Vercel. Provider code: `server/assistant/gemini.ts` and `server/assistant/claude.ts` (the tools in `tools.ts` are shared). With Claude the default model is `claude-opus-5-5` at low effort.
+
+Google AI Studio's free tier has low per-minute limits and Google may use free-tier prompts to improve its products; for real resident data, enable billing on the Google Cloud project behind the key (paid-tier prompts are not used that way).
 
 ## Barangay Secretary dashboard (`/dashboard`)
 

@@ -45,3 +45,8 @@ next-env.d.ts
 
 # Database backups
 /backups/
+
+# Local credential notes (never commit)
+CREDENTIALS.*
+# Office lock files
+~$*

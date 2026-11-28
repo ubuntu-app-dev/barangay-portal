@@ -6,6 +6,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { logout } from "@/lib/auth/logout";
 import { ROUTES } from "@/lib/routes";
 import type { AppNotification } from "@/types/dashboard";
+import AssistantWidget from "@/components/assistant/AssistantWidget";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 
@@ -105,6 +106,7 @@ export default function DashboardShell({
           </main>
         </div>
       </div>
+      <AssistantWidget ws={ws} firstName={user.name.split(" ")[0]} />
     </div>
   );
 }
