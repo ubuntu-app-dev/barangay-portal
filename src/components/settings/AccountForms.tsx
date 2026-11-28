@@ -48,8 +48,16 @@ export function PreferencesForm({ action, v, role = "BARANGAY_SECRETARY" }: { ac
   const secretary = role === "BARANGAY_SECRETARY";
   return (
     <ActionForm action={action} className="surface p-5 sm:p-7">
-      <FormSection title="Notify me about" description="Shown in the bell at the top of every page.">
+      <FormSection title="Notify me about" description="Shown in the bell at the top of every page, and as push notifications on devices where you turned them on.">
         {secretary && <Checkbox name="requests" label="New certificate requests" hint="Online requests from residents." defaultChecked={v.requests ?? true} />}
+        {(secretary || role === "MUNICIPAL_PERSONNEL") && (
+          <Checkbox
+            name="deadlines"
+            label="Report deadlines"
+            hint={secretary ? "3 days before, the day before, and on the due date, then once if overdue." : "When a deadline passes and barangays have not submitted."}
+            defaultChecked={v.deadlines ?? true}
+          />
+        )}
         <Checkbox name="submissions" label={secretary ? "Submission reviews" : "New submissions"} hint={secretary ? "When the municipality approves or returns a report." : "When a barangay sends a report to your office."} defaultChecked={v.submissions ?? true} />
         <Checkbox name="announcements" label="Municipal announcements" defaultChecked={v.announcements ?? true} />
         <Checkbox name="advisories" label="Urgent advisories" hint="Health, disaster, and safety advisories." defaultChecked={v.advisories ?? true} />

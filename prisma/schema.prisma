@@ -489,6 +489,7 @@ model User {
 
   sessions          Session[]
   notifications     Notification[]
+  pushSubscriptions PushSubscription[]
   auditLogs         AuditLog[]         @relation("actor")
   announcementReads AnnouncementRead[]
 
@@ -843,22 +844,23 @@ model CommunityResource {
 
 /// What the municipality asks barangays to submit, and by when (created by municipal personnel).
 model ReportRequirement {
-  id               String          @id @default(cuid())
-  municipalityCode String          @db.VarChar(10)
-  municipality     Municipality    @relation(fields: [municipalityCode], references: [code])
+  id               String           @id @default(cuid())
+  municipalityCode String           @db.VarChar(10)
+  municipality     Municipality     @relation(fields: [municipalityCode], references: [code])
   officeId         String
-  office           MunicipalOffice @relation(fields: [officeId], references: [id])
+  office           MunicipalOffice  @relation(fields: [officeId], references: [id])
   title            String
   description      String?
   kind             ReportKind
   frequency        Frequency
-  periodStart      DateTime        @db.Date
-  periodEnd        DateTime        @db.Date
+  periodStart      DateTime         @db.Date
+  periodEnd        DateTime         @db.Date
   dueAt            DateTime
-  isActive         Boolean         @default(true)
+  isActive         Boolean          @default(true)
   createdById      String?
-  createdAt        DateTime        @default(now())
+  createdAt        DateTime         @default(now())
   submissions      Submission[]
+  reminders        ReportReminder[]
 
   @@index([municipalityCode, dueAt])
 }
@@ -942,6 +944,35 @@ model Notification {
   createdAt DateTime  @default(now())
 
   @@index([userId, readAt])
+}
+
+/// A browser or installed app that accepted push notifications. One user can have several devices.
+model PushSubscription {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// The push service URL for this device; unique per browser install.
+  endpoint   String    @unique
+  p256dh     String
+  auth       String
+  userAgent  String?
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime?
+
+  @@index([userId])
+}
+
+/// Deadline reminders already sent, so the daily job never repeats one.
+/// audience: "brgy:<barangayCode>" (the secretary) or "office:<officeId>" (municipal staff).
+/// stage: "D3" (2–3 days left), "D1" (due tomorrow), "D0" (due today), "OVERDUE".
+model ReportReminder {
+  requirementId String
+  requirement   ReportRequirement @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  audience      String
+  stage         String            @db.VarChar(10)
+  sentAt        DateTime          @default(now())
+
+  @@id([requirementId, audience, stage])
 }
 
 // ───────────────────────────── Audit and settings ─────────────────────────────

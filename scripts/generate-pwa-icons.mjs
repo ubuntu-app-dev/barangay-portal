@@ -22,3 +22,11 @@ await tile(512, 0.84, "icon-512.png");
 await tile(192, 0.64, "maskable-192.png");
 await tile(512, 0.64, "maskable-512.png");
 console.log("Icons written to public/pwa");
+
+// Android's status-bar badge: a single-colour silhouette (only the alpha channel is used).
+const shape = svg.toString().match(/<path d="([^"]+)"[^>]*fill="#0038A8"/)?.[1];
+if (shape) {
+  const badge = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="80 0 440 600"><path d="${shape}" fill="#fff"/></svg>`;
+  await sharp(Buffer.from(badge), { density: 300 }).resize(96, 96, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toFile(out("badge-96.png"));
+  console.log("Badge written");
+}

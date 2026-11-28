@@ -7,9 +7,11 @@
  *   - /_next/static/* build files (scripts, styles, fonts): content-hashed and the same for every user
  * Every page still needs the internet; without it the offline page is shown instead of the browser error.
  *
+ * Push: shows report deadline reminders sent by the server (server/push.ts) and opens the right page on tap.
+ *
  * Bump VERSION when this file or offline.html changes.
  */
-const VERSION = "v1";
+const VERSION = "v2";
 const SHELL = `lgu-shell-${VERSION}`;
 const STATIC = "lgu-static";
 const STATIC_MAX = 300;
@@ -80,3 +82,44 @@ async function trim(cache) {
   const keys = await cache.keys();
   for (let i = 0; i < keys.length - STATIC_MAX; i++) await cache.delete(keys[i]);
 }
+
+self.addEventListener("push", (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = { body: event.data ? event.data.text() : "" };
+  }
+  const title = data.title || "LGU Connect";
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body: data.body || "",
+      icon: "/pwa/icon-192.png",
+      badge: "/pwa/badge-96.png",
+      tag: data.tag || undefined,
+      renotify: !!data.tag,
+      data: { url: data.url || "/app" },
+      lang: "en-PH",
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = new URL(event.notification.data?.url || "/app", self.location.origin);
+  if (target.origin !== self.location.origin) return;
+  event.waitUntil(
+    (async () => {
+      const open = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      // Reuse an open LGU Connect window if there is one.
+      for (const client of open) {
+        if (new URL(client.url).origin === target.origin && "focus" in client) {
+          await client.focus();
+          if ("navigate" in client) await client.navigate(target.href).catch(() => {});
+          return;
+        }
+      }
+      await self.clients.openWindow(target.href);
+    })(),
+  );
+});

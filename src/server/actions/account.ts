@@ -49,7 +49,7 @@ export async function changePassword(_: ActionState, fd: FormData): Promise<Acti
 export async function savePreferences(_: ActionState, fd: FormData): Promise<ActionState> {
   const u = await requireUser();
   const session = u.actor;
-  const p = parse(z.object({ requests: bool, submissions: bool, announcements: bool, advisories: bool, email: bool }), fd);
+  const p = parse(z.object({ requests: bool, submissions: bool, deadlines: bool, announcements: bool, advisories: bool, email: bool }), fd);
   if (!p.ok) return p.state;
   await db.user.update({ where: { id: session.user.id }, data: { preferences: p.data } });
   await audit(session, { action: "UPDATE", entityType: "User", entityId: session.user.id, summary: "Updated notification preferences" });

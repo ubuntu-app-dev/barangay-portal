@@ -1,4 +1,6 @@
 import Card from "@/components/dashboard/ui/Card";
+import PushSettings from "./PushSettings";
+import { pushConfigured, vapidPublicKey } from "@/server/push";
 import DetailList from "@/components/dashboard/ui/DetailList";
 import { ActionForm, SubmitButton } from "@/components/dashboard/ui/form";
 import PageHeader from "@/components/dashboard/ui/PageHeader";
@@ -77,6 +79,7 @@ export async function PreferenceSettings({ u }: { u: StaffSession }) {
   return (
     <div className="space-y-6">
       <PageHeader eyebrow="Settings" icon="bell" title="Notification Preferences" description="Choose what you want to be told about." />
+      <PushSettings publicKey={pushConfigured() ? vapidPublicKey() : null} />
       <PreferencesForm action={savePreferences} v={prefs} role={u.role} />
     </div>
   );

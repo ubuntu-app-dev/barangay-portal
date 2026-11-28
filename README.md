@@ -67,6 +67,16 @@ Staff can install LGU Connect on phones and computers; it then opens in its own 
 - `public/sw.js` is the service worker, registered in production by `components/shared/PwaSetup.tsx`. For privacy (RA 10173) it never stores pages or API responses, only the offline page, the icons, and hashed `/_next/static/` build files. Without internet, a page load shows `public/offline.html`, which reloads when the connection returns. Bump `VERSION` in `sw.js` when it or `offline.html` changes.
 - "Install app" appears in the account menu and the landing page's phone menu when the browser can install (`lib/pwa.ts` keeps the `beforeinstallprompt` event). On iPhone and iPad, it shows the Share → Add to Home Screen steps (`IosInstallDialog`). On desktop Chrome and Edge, the address bar's install icon also works.
 
+## Push notifications (report deadlines)
+
+A daily job reminds people about report deadlines through the bell and, on devices where they turned it on, as push notifications.
+
+- **Who gets what:** barangay secretaries whose barangay hasn't submitted a required report get a reminder when 2–3 days are left, the day before, on the due date, and once when it's overdue. Municipal personnel of the requiring office get one notice when the deadline passes, listing the barangays that haven't submitted. Deadlines more than 14 days old are ignored. Logic is in `server/reminders.ts`; `ReportReminder` rows make sure nothing is sent twice.
+- **Schedule:** Vercel Cron calls `GET /api/cron/report-reminders` daily at 00:00 UTC (8:00 AM Manila; `vercel.json`). It requires `Authorization: Bearer $CRON_SECRET`. To run it by hand: `curl -H "Authorization: Bearer $CRON_SECRET" https://<site>/api/cron/report-reminders`.
+- **Devices:** users turn push on per device in Settings → Notification Preferences (`components/settings/PushSettings.tsx`), and can send themselves a test. Signing out removes push from that device. On iPhone/iPad, push works only from the installed Home Screen app (iOS 16.4+). "Report deadlines" in the same page turns the reminders off.
+- **Privacy:** notifications contain report names, dates and barangay names only, never resident data.
+- **Environment:** `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (a `mailto:` or `https:` contact), and `CRON_SECRET`. Generate keys with `npx web-push generate-vapid-keys`. Changing the keys turns push off on every device until users turn it on again.
+
 ## Login page (`/login`)
 
 Pick a role, then narrow the location before the credentials appear: Barangay Secretary = region, province, city or municipality, barangay; Municipal Personnel = region, province, city or municipality; Superadmin = credentials only. Regions without provinces (NCR) skip the province step.

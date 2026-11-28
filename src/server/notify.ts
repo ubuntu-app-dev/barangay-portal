@@ -4,11 +4,13 @@ import { db } from "./db";
 
 type Tx = Prisma.TransactionClient | typeof db;
 
+export type NotificationPref = "submissions" | "announcements" | "advisories" | "requests" | "deadlines";
+
 /**
  * Sends one notification to every active user matching `where`, skipping those who turned this kind off
- * in Notification Preferences (missing preference = on).
+ * in Notification Preferences (missing preference = on). Returns the ids of the users notified.
  */
-export async function notifyUsers(tx: Tx, where: Prisma.UserWhereInput, n: { title: string; body: string; href: string }, pref?: "submissions" | "announcements" | "advisories" | "requests") {
+export async function notifyUsers(tx: Tx, where: Prisma.UserWhereInput, n: { title: string; body: string; href: string }, pref?: NotificationPref) {
   const users = await tx.user.findMany({ where: { ...where, status: "ACTIVE" }, select: { id: true, preferences: true } });
   const wanted = users.filter((u) => {
     if (!pref) return true;
@@ -16,5 +18,5 @@ export async function notifyUsers(tx: Tx, where: Prisma.UserWhereInput, n: { tit
     return p[pref] !== false;
   });
   if (wanted.length) await tx.notification.createMany({ data: wanted.map((u) => ({ userId: u.id, title: n.title.slice(0, 200), body: n.body.slice(0, 500), href: n.href })) });
-  return wanted.length;
+  return wanted.map((u) => u.id);
 }
